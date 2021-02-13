@@ -1,0 +1,7 @@
+dependencies:
+  - name: My dependency
+    url: file://my_server/my_dep.zip
+    cmake_args: -DUSE_MPI=ON
+  - name: My other dependency
+    url: http://my_repo/my_other_dep.git
+    git_hash: 25481515
