@@ -1,19 +1,28 @@
 import hashlib
 import sys
 from dataclasses import dataclass
+from multiprocessing import cpu_count
 from shutil import get_unpack_formats, ReadError, unpack_archive
 from tempfile import TemporaryDirectory
-from urllib.request import urlretrieve, HTTPError
+from urllib.error import HTTPError
+from urllib.request import urlretrieve
 
 from furl import furl
 from git import GitCommandError, Repo
 from path import Path
 
+from dependen6make.commands import (
+    cmake_build,
+    cmake_configure,
+    CMakeBuildError,
+    CMakeConfigureError,
+)
 from dependen6make.exceptions import Dependen6makeError
-from dependen6make.filesystem import CACHE_FETCH
+from dependen6make.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
 ARCHIVE_EXTENSIONS = [ext for format in get_unpack_formats() for ext in format[1]]
+CPU_CORES = cpu_count()
 
 
 @dataclass
@@ -22,54 +31,42 @@ class Dependency:
 
     name: str
     url: str
-    directory_name: str = None
+    git_hash: str = ""
+    cmake_args: str = ""
+    jobs: int = 0
+    directory_name: str = ""
     url_parsed: furl = None
-    git_hash: str = None
-    cmake_args: str = None
     fetched: bool = False
+    built: bool = False
 
     def __post_init__(self):
         # parse URL
         self.url_parsed = furl(self.url)
 
-    def get_slug_name(self):
+        # set directory name
+        self.directory_name = f"{self.get_slug_name()}_{self.get_hash_url()}"
+
+    def get_slug_name(self) -> str:
         """Get a slugified name of the dependency."""
         return "_".join(self.name.lower().split())
 
-    def get_hash_url(self):
+    def get_hash_url(self) -> str:
         """Get a hashed URL of the dependency."""
         return hashlib.md5(self.url.encode()).hexdigest()
 
-    def get_extension(self):
+    def get_extension(self) -> str:
         """Get extension in the URL."""
         return Path(self.url_parsed.path.segments[-1]).ext
 
-    def get_directory_name_git(self):
-        """Get directory name for a Git dependency."""
-        return self.get_slug_name()
-
-    def get_directory_name_archive(self):
-        """Get directory name for an archive dependency."""
-        return f"{self.get_slug_name()}_{self.get_hash_url()}"
-
     def refresh(self):
-        """Refresh state of dependency based on attributes and cache content."""
-        # get directory name based on extension
-        extension = self.get_extension()
-        if extension == ".git":
-            self.directory_name = self.get_directory_name_git()
-
-        elif extension in ARCHIVE_EXTENSIONS:
-            self.directory_name = self.get_directory_name_archive()
-
-        else:
-            raise UnknownDependencyTypeError(
-                f"Unable to manage dependency {self.name} of type {extension}"
-            )
-
+        """Refresh state of dependency based on cache content."""
         # get fetched status based on cache
         if (CACHE_FETCH / self.directory_name).exists():
             self.fetched = True
+
+        # get built status based on cache
+        if (CACHE_BUILD / self.directory_name).exists():
+            self.built = True
 
     def describe(self, output=sys.stdout):
         """Describe dependency in text."""
@@ -81,11 +78,16 @@ class Dependency:
         if self.cmake_args:
             output.write(f"CMake arguments: {self.cmake_args}\n")
 
-        if self.directory_name:
-            output.write(f"Directory name: {self.directory_name}\n")
+        if self.jobs:
+            output.write(f"Jobs for building: {self.jobs}\n")
+
+        output.write(f"Directory name: {self.directory_name}\n")
 
         if self.fetched:
             output.write("Fetched\n")
+
+        if self.built:
+            output.write("Built\n")
 
     def fetch(self):
         """Fetch the dependency according to its type.
@@ -110,11 +112,7 @@ class Dependency:
         self.fetched = True
 
     def fetch_git(self):
-        """Fetch a Git repository and checkout to the requested hash if necessary.
-
-        Directory name is set to slugified version of dependency name.
-        """
-        self.directory_name = self.get_directory_name_git()
+        """Fetch a Git repository and checkout to the requested hash if necessary."""
         path = CACHE_FETCH / self.directory_name
 
         try:
@@ -138,10 +136,7 @@ class Dependency:
             ) from error
 
     def fetch_archive(self):
-        """Fech an archive online and decompress it.
-
-        Directory name is set to hashed URL of the dependency."""
-        self.directory_name = self.get_directory_name_archive()
+        """Fech an archive online and decompress it."""
         path = CACHE_FETCH / self.directory_name
 
         # download if the path doesn't exist, or do nothing otherwise
@@ -193,6 +188,30 @@ class Dependency:
         # move to fetch directory
         to_move_path.move(destination_path)
 
+    def build(self):
+        """Build the dependency."""
+        try:
+            cmake_configure(
+                CACHE_FETCH / self.directory_name,
+                CACHE_BUILD / self.directory_name,
+                CACHE_INSTALL,
+                self.cmake_args.split(),
+            )
+
+        except CMakeConfigureError as error:
+            raise ConfigureError(f"Cannot configure {self.name}: {error}") from error
+
+        try:
+            cmake_build(
+                CACHE_BUILD / self.directory_name, self.jobs or (CPU_CORES * 2 + 1)
+            )
+
+        except CMakeBuildError as error:
+            raise BuildError(f"Cannot build {self.name}: {error}") from error
+
+        # mark as built
+        self.built = True
+
 
 class UnknownDependencyTypeError(Dependen6makeError):
     pass
@@ -207,4 +226,12 @@ class ArchiveDecompressError(Dependen6makeError):
 
 
 class GitRepoFetchError(Dependen6makeError):
+    pass
+
+
+class ConfigureError(Dependen6makeError):
+    pass
+
+
+class BuildError(Dependen6makeError):
     pass

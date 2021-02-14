@@ -3,8 +3,9 @@ from dataclasses import dataclass, field
 
 from tqdm import tqdm
 
+from dependen6make.commands import check_cmake_exists
 from dependen6make.dependency import Dependency
-from dependen6make.filesystem import CACHE, CACHE_FETCH
+from dependen6make.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH
 
 
 @dataclass
@@ -37,3 +38,16 @@ class DependencyList:
         output.write("Fetching dependencies...\n")
         for dependency in tqdm(self.dependencies, file=output, leave=False):
             dependency.fetch()
+
+    def build(self, output=sys.stdout):
+        """Build dependencies."""
+        # create build cache
+        CACHE_BUILD.mkdir_p()
+
+        # check CMake works
+        check_cmake_exists()
+
+        # build
+        output.write("Building dependencies...\n")
+        for dependency in tqdm(self.dependencies, file=output, leave=False):
+            dependency.build()

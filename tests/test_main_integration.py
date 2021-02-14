@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 
 from path import Path
 
-from dependen6make.__main__ import run_fetch, run_list
+from dependen6make.__main__ import run_build, run_fetch, run_list
 
 
 @contextmanager
@@ -45,3 +45,20 @@ class TestRunFetch:
                     args = Namespace(path=directory_path)
                     output = StringIO()
                     run_fetch(args, output)
+
+
+class TestRunBuild:
+    def test_run(self, mocker):
+        """Build dependencies."""
+        mocker.patch("dependen6make.dependency.Repo")
+        mocker.patch("dependen6make.dependency.urlretrieve")
+        mocker.patch("dependen6make.dependency.unpack_archive")
+        mocker.patch("dependen6make.commands.run")
+
+        with TemporaryDirectory() as temp_directory:
+            with cd(Path(temp_directory)):
+                with resources.path("tests.resources", "") as directory:
+                    directory_path = Path(directory)
+                    args = Namespace(path=directory_path)
+                    output = StringIO()
+                    run_build(args, output)

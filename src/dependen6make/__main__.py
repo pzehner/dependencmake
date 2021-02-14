@@ -27,6 +27,10 @@ def get_parser() -> ArgumentParser:
     fetch_parser = subparsers.add_parser("fetch", help="fetch dependencies")
     fetch_parser.set_defaults(function=run_fetch)
 
+    # build parser
+    build_parser = subparsers.add_parser("build", help="fetch and build dependencies")
+    build_parser.set_defaults(function=run_build)
+
     # add path to source last
     parser.add_argument(
         "path",
@@ -56,6 +60,17 @@ def run_fetch(args: Namespace, output=sys.stdout):
     dependency_list = DependencyList()
     dependency_list.create_dependencies(config["dependencies"])
     dependency_list.fetch(output)
+
+
+def run_build(args: Namespace, output=sys.stdout):
+    """Run the build command."""
+    config = get_config(args.path)
+    check_config(config)
+
+    dependency_list = DependencyList()
+    dependency_list.create_dependencies(config["dependencies"])
+    dependency_list.fetch(output)
+    dependency_list.build(output)
 
 
 def main():

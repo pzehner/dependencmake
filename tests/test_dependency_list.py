@@ -6,7 +6,7 @@ from path import Path
 
 from dependen6make.dependency import Dependency
 from dependen6make.dependency_list import DependencyList
-from dependen6make.filesystem import CACHE, CACHE_FETCH
+from dependen6make.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH
 
 
 @pytest.fixture
@@ -58,3 +58,18 @@ class TestDependencyList:
 
         mocked_mkdir_p.assert_has_calls([call(CACHE), call(CACHE_FETCH)])
         mocked_fetch.assert_called_with()
+
+    def test_build(self, dependency_list, mocker):
+        """Build dependencies in list."""
+        mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
+        mocked_check_cmake_exists = mocker.patch(
+            "dependen6make.dependency_list.check_cmake_exists"
+        )
+        mocked_build = mocker.patch.object(Dependency, "build")
+
+        output = StringIO()
+        dependency_list.build(output)
+
+        mocked_mkdir_p.assert_called_with(CACHE_BUILD)
+        mocked_check_cmake_exists.assert_called_with()
+        mocked_build.assert_called_with()
