@@ -1,18 +1,24 @@
 import pytest
 from io import StringIO
+from re import escape
 from shutil import ReadError
-from unittest.mock import MagicMock
+from unittest.mock import call, MagicMock
 from urllib.error import HTTPError
 
+from furl import furl
 from git import GitCommandError
 from path import Path
 
 from dependen6make.dependency import (
+    ArchiveAccessError,
     ArchiveDecompressError,
     ArchiveDownloadError,
+    ArchiveMoveError,
     BuildError,
     ConfigureError,
     Dependency,
+    FolderAccessError,
+    FolderCopyError,
     GitRepoFetchError,
     InstallError,
     UnknownDependencyTypeError,
@@ -57,6 +63,22 @@ def zip_dependency():
     return Dependency(
         name="My zip dep",
         url="http://example.com/dependency.zip",
+    )
+
+
+@pytest.fixture
+def folder_dependency():
+    return Dependency(
+        name="My dep",
+        url="file:///home/me/dependency",
+    )
+
+
+@pytest.fixture
+def local_zip_dependency():
+    return Dependency(
+        name="My zip dep",
+        url="file:///home/me/dependency.zip",
     )
 
 
@@ -131,14 +153,51 @@ class TestDependency:
 
         mocked_fetch_archive.assert_called_with()
 
-    def test_fetch_unknown_type(self, dependency, mocker):
-        """Fetch in case of a dependency of unknown type."""
-        mocked_fetch_git = mocker.patch.object(Dependency, "fetch_git")
+    def test_fetch_for_folder(self, folder_dependency, mocker):
+        """Fetch in case of a local folder."""
+        mocked_fetch_folder = mocker.patch.object(Dependency, "fetch_folder")
 
-        with pytest.raises(UnknownDependencyTypeError):
+        folder_dependency.fetch()
+
+        mocked_fetch_folder.assert_called_with()
+
+    def test_fetch_for_local_archive(self, local_zip_dependency, mocker):
+        """Fetch in case of a local zip archive."""
+        mocked_fetch_archive = mocker.patch.object(Dependency, "fetch_local_archive")
+
+        local_zip_dependency.fetch()
+
+        mocked_fetch_archive.assert_called_with()
+
+    def test_fetch_unknown_http_type(self, dependency, mocker):
+        """Fetch in case of a dependency of unknown type with HTTP scheme."""
+        with pytest.raises(
+            UnknownDependencyTypeError,
+            match=escape(
+                r"Unable to manage online dependency My dep of type (no extension)"
+            ),
+        ):
             dependency.fetch()
 
-        mocked_fetch_git.assert_not_called()
+    def test_fetch_unknown_file_type(self, dependency, mocker):
+        """Fetch in case of a dependency of unknown type with file scheme."""
+        dependency.url = "file:///home/me/dependency.other"
+        dependency.url_parsed = furl(dependency.url)
+        with pytest.raises(
+            UnknownDependencyTypeError,
+            match=r"Unable to manage local dependency My dep of type .other",
+        ):
+            dependency.fetch()
+
+    def test_fetch_unknown_scheme(self, dependency, mocker):
+        """Fetch in case of a dependency of unknown scheme."""
+        dependency.url = "unknown://my_server/dependency.zip"
+        dependency.url_parsed = furl(dependency.url)
+        with pytest.raises(
+            UnknownDependencyTypeError,
+            match=r"Unable to manage dependency My dep with scheme unknown",
+        ):
+            dependency.fetch()
 
     def test_fetch_git_clone(self, git_dependency, mocker):
         """Fetch a Git repository for the first time."""
@@ -210,25 +269,24 @@ class TestDependency:
         """Fetch an archive."""
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = False
-        mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
         mocked_temporary_directory_class = mocker.patch(
             "dependen6make.dependency.TemporaryDirectory"
         )
         mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
         mocked_urlretrieve = mocker.patch("dependen6make.dependency.urlretrieve")
-        mocked_unpack_archive = mocker.patch("dependen6make.dependency.unpack_archive")
+        mocked_decompress = mocker.patch.object(Dependency, "decompress")
+        mocked_decompress.return_value = Path("temp") / "extract"
         mocked_move_decompress_path = mocker.patch.object(
             Dependency, "move_decompress_path"
         )
 
         zip_dependency.fetch_archive()
 
-        mocked_mkdir_p.assert_called_with(Path("temp") / "extract")
         mocked_urlretrieve.assert_called_with(
             "http://example.com/dependency.zip", Path("temp") / "dependency.zip"
         )
-        mocked_unpack_archive.assert_called_with(
-            Path("temp") / "dependency.zip", Path("temp") / "extract"
+        mocked_decompress.assert_called_with(
+            Path("temp") / "dependency.zip", Path("temp")
         )
         mocked_move_decompress_path.assert_called_with(
             Path("temp") / "extract",
@@ -247,7 +305,7 @@ class TestDependency:
         mocked_urlretrieve.side_effect = HTTPError(
             "url", "000", "error", "hdrs", MagicMock()
         )
-        mocked_unpack_archive = mocker.patch("dependen6make.dependency.unpack_archive")
+        mocked_decompress = mocker.patch.object(Dependency, "decompress")
         mocked_move_decompress_path = mocker.patch.object(
             Dependency, "move_decompress_path"
         )
@@ -259,47 +317,64 @@ class TestDependency:
         ):
             zip_dependency.fetch_archive()
 
-        mocked_unpack_archive.assert_not_called()
+        mocked_decompress.assert_not_called()
         mocked_move_decompress_path.assert_not_called()
 
-    def test_fetch_archive_decompress_error(self, mocker, zip_dependency):
-        """Error when decompressing an archive."""
-        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
-        mocked_exists.return_value = False
-        mocker.patch.object(Path, "mkdir_p", autospec=True)
-        mocked_temporary_directory_class = mocker.patch(
-            "dependen6make.dependency.TemporaryDirectory"
+    def test_decompress(self, mocker, zip_dependency):
+        """Decompress an archive."""
+        mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
+        mocked_unpack_archive = mocker.patch("dependen6make.dependency.unpack_archive")
+
+        decompress_path = zip_dependency.decompress(
+            Path("dependency.zip"), Path("temp")
         )
-        mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
-        mocker.patch("dependen6make.dependency.urlretrieve")
+        assert decompress_path == Path("temp") / "extract"
+
+        mocked_mkdir_p.assert_called_with(Path("temp") / "extract")
+        mocked_unpack_archive.assert_called_with(
+            Path("dependency.zip"), Path("temp") / "extract"
+        )
+
+    def test_decompress_error(self, mocker, zip_dependency):
+        """Error when decompressing an archive."""
+        mocker.patch.object(Path, "mkdir_p", autospec=True)
         mocked_unpack_archive = mocker.patch("dependen6make.dependency.unpack_archive")
         mocked_unpack_archive.side_effect = ReadError("error")
-        mocked_move_decompress_path = mocker.patch.object(
-            Dependency, "move_decompress_path"
-        )
 
         with pytest.raises(
             ArchiveDecompressError,
             match=r"Cannot decompress archive of My zip dep: .*error",
         ):
-            zip_dependency.fetch_archive()
+            zip_dependency.decompress(Path("dependency.zip"), Path("temp"))
 
-        mocked_move_decompress_path.assert_not_called()
-
-    def test_move_decompress_path_single(self, mocker):
+    def test_move_decompress_path_single(self, mocker, dependency):
         """Move a single directory."""
         mocked_listdir = mocker.patch.object(Path, "listdir", autospec=True)
         mocked_listdir.return_value = [Path("temp") / "extract" / "my_dep"]
         mocked_move = mocker.patch.object(Path, "move", autospec=True)
 
-        Dependency.move_decompress_path(Path("temp") / "extract", Path("destination"))
+        dependency.move_decompress_path(Path("temp") / "extract", Path("destination"))
 
         mocked_listdir.assert_called_with(Path("temp") / "extract")
         mocked_move.assert_called_with(
             Path("temp") / "extract" / "my_dep", Path("destination")
         )
 
-    def test_move_decompress_path_multiple(self, mocker):
+    def test_move_decompress_path_single_error(self, mocker, dependency):
+        """Error when moving a single directory."""
+        mocked_listdir = mocker.patch.object(Path, "listdir", autospec=True)
+        mocked_listdir.return_value = [Path("temp") / "extract" / "my_dep"]
+        mocked_move = mocker.patch.object(Path, "move", autospec=True)
+        mocked_move.side_effect = OSError("error")
+
+        with pytest.raises(
+            ArchiveMoveError, match=r"Cannot move archive of My dep: error"
+        ):
+            dependency.move_decompress_path(
+                Path("temp") / "extract", Path("destination")
+            )
+
+    def test_move_decompress_path_multiple(self, mocker, dependency):
         """Move several elements."""
         mocked_listdir = mocker.patch.object(Path, "listdir", autospec=True)
         mocked_listdir.return_value = [
@@ -308,10 +383,130 @@ class TestDependency:
         ]
         mocked_move = mocker.patch.object(Path, "move", autospec=True)
 
-        Dependency.move_decompress_path(Path("temp") / "extract", Path("destination"))
+        dependency.move_decompress_path(Path("temp") / "extract", Path("destination"))
 
         mocked_listdir.assert_called_with(Path("temp") / "extract")
         mocked_move.assert_called_with(Path("temp") / "extract", Path("destination"))
+
+    def test_fetch_folder(self, folder_dependency, mocker):
+        """Fetch a local folder."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.side_effect = [False, True]
+        mocked_copytree = mocker.patch.object(Path, "copytree", autospec=True)
+
+        folder_dependency.fetch_folder()
+
+        mocked_exists.assert_has_calls(
+            [
+                call(CACHE_FETCH / "my_dep_c1a8170a4b020c8d66673eda4859358f"),
+                call(Path("/") / "home" / "me" / "dependency"),
+            ]
+        )
+        mocked_copytree.assert_called_with(
+            Path("/") / "home" / "me" / "dependency",
+            CACHE_FETCH / "my_dep_c1a8170a4b020c8d66673eda4859358f",
+        )
+
+    def test_fetch_folder_exists(self, folder_dependency, mocker):
+        """Fetch a local folder that already exists."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = True
+        mocked_copytree = mocker.patch.object(Path, "copytree", autospec=True)
+
+        folder_dependency.fetch_folder()
+
+        mocked_copytree.assert_not_called()
+
+    def test_fetch_folder_error_not_found(self, folder_dependency, mocker):
+        """Cannot find a local folder."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.side_effect = [False, False]
+        mocked_copytree = mocker.patch.object(Path, "copytree", autospec=True)
+
+        with pytest.raises(
+            FolderAccessError,
+            match=r"Cannot access My dep at file:///home/me/dependency: "
+            "folder not found",
+        ):
+            folder_dependency.fetch_folder()
+
+        mocked_copytree.assert_not_called()
+
+    def test_fetch_folder_error_copy(self, folder_dependency, mocker):
+        """Error when copying a local folder."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.side_effect = [False, True]
+        mocked_copytree = mocker.patch.object(Path, "copytree", autospec=True)
+        mocked_copytree.side_effect = OSError("error")
+
+        with pytest.raises(
+            FolderCopyError,
+            match=r"Cannot copy My dep at file:///home/me/dependency: error",
+        ):
+            folder_dependency.fetch_folder()
+
+    def test_fetch_local_archive(self, local_zip_dependency, mocker):
+        """Fetch a local archive."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.side_effect = [False, True]
+        mocked_temporary_directory_class = mocker.patch(
+            "dependen6make.dependency.TemporaryDirectory"
+        )
+        mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
+        mocked_decompress = mocker.patch.object(Dependency, "decompress")
+        mocked_decompress.return_value = Path("temp") / "extract"
+        mocked_move_decompress_path = mocker.patch.object(
+            Dependency, "move_decompress_path"
+        )
+
+        local_zip_dependency.fetch_local_archive()
+
+        mocked_exists.assert_has_calls(
+            [
+                call(CACHE_FETCH / "my_zip_dep_235f522e2a9eb791919890436bacb0ee"),
+                call(Path("/") / "home" / "me" / "dependency.zip"),
+            ]
+        )
+        mocked_decompress.assert_called_with(
+            Path("/") / "home" / "me" / "dependency.zip", Path("temp")
+        )
+        mocked_move_decompress_path.assert_called_with(
+            Path("temp") / "extract",
+            CACHE_FETCH / "my_zip_dep_235f522e2a9eb791919890436bacb0ee",
+        )
+
+    def test_fetch_local_archive_exists(self, local_zip_dependency, mocker):
+        """Fetch a local archive that already exists."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = True
+        mocked_decompress = mocker.patch.object(Dependency, "decompress")
+        mocked_move_decompress_path = mocker.patch.object(
+            Dependency, "move_decompress_path"
+        )
+
+        local_zip_dependency.fetch_local_archive()
+
+        mocked_decompress.assert_not_called()
+        mocked_move_decompress_path.assert_not_called()
+
+    def test_fetch_local_archive_error_not_found(self, local_zip_dependency, mocker):
+        """Cannot access a local archive."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.side_effect = [False, False]
+        mocked_decompress = mocker.patch.object(Dependency, "decompress")
+        mocked_move_decompress_path = mocker.patch.object(
+            Dependency, "move_decompress_path"
+        )
+
+        with pytest.raises(
+            ArchiveAccessError,
+            match=r"Cannot access My zip dep at file:///home/me/dependency.zip: "
+            "file not found",
+        ):
+            local_zip_dependency.fetch_local_archive()
+
+        mocked_decompress.assert_not_called()
+        mocked_move_decompress_path.assert_not_called()
 
     def test_describe_after_fetch(self, zip_dependency, mocker):
         """Describe a dependency."""

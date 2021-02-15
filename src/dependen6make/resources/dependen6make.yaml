@@ -4,10 +4,15 @@ dependencies:
   # name of the dependency, used for display
   # mandatory
   #
+  #   url: http://my_server/my_dep.git
   #   url: http://my_server/my_dep.zip
+  #   url: file:///home/me/my_dep.zip
+  #   url: file:///home/me/my_dep
   # URL where to get the dependency
-  # can be a Git repository (must end by .git) or an archive (must end by .zip,
-  # .tar, .tar.bz2, .tbz2, .tar.gz, .tgz, .tar.xz or .txz)
+  # can be a Git repository, online only (must end by .git)
+  # can be an archive, online or local (must end by .zip, .tar, .tar.bz2,
+  # .tbz2, .tar.gz, .tgz, .tar.xz or .txz)
+  # can be a plain directory, local only
   # mandatory
   #
   #   git_hash: 424242

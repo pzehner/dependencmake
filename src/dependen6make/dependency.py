@@ -103,20 +103,40 @@ class Dependency:
     def fetch(self):
         """Fetch the dependency according to its type.
 
-        Types are for now limited to Git repository or archive file.
+        Types are for now limited to Git repository, online archive file, local
+        plain directory or local archive file.
         """
-        # detect type according to extension
+        scheme = self.url_parsed.scheme
         extension = self.get_extension()
 
-        if extension == ".git":
-            self.fetch_git()
+        if scheme in ["http", "https"]:
+            if extension == ".git":
+                self.fetch_git()
 
-        elif extension in ARCHIVE_EXTENSIONS:
-            self.fetch_archive()
+            elif extension in ARCHIVE_EXTENSIONS:
+                self.fetch_archive()
+
+            else:
+                raise UnknownDependencyTypeError(
+                    f"Unable to manage online dependency {self.name} of "
+                    f"type {extension or '(no extension)'}"
+                )
+
+        elif scheme == "file":
+            if not extension:
+                self.fetch_folder()
+
+            elif extension in ARCHIVE_EXTENSIONS:
+                self.fetch_local_archive()
+
+            else:
+                raise UnknownDependencyTypeError(
+                    f"Unable to manage local dependency {self.name} of type {extension}"
+                )
 
         else:
             raise UnknownDependencyTypeError(
-                f"Unable to manage dependency {self.name} of type {extension}"
+                f"Unable to manage dependency {self.name} with scheme {scheme}"
             )
 
         # mark as fetched
@@ -147,7 +167,7 @@ class Dependency:
             ) from error
 
     def fetch_archive(self):
-        """Fech an archive online and decompress it."""
+        """Fech an online archive and decompress it."""
         path = CACHE_FETCH / self.directory_name
 
         # download if the path doesn't exist, or do nothing otherwise
@@ -166,23 +186,71 @@ class Dependency:
                     f"Cannot download {self.name} at {self.url}: {error}"
                 ) from error
 
-            # decompress file in a special directory, as we cannot list the
-            # content of the archive
-            decompress_path = Path(temp_directory) / "extract"
-            decompress_path.mkdir_p()
-            try:
-                unpack_archive(archive_path, decompress_path)
-
-            except ReadError as error:
-                raise ArchiveDecompressError(
-                    f"Cannot decompress archive of {self.name}: {error}"
-                ) from error
-
-            # move the decompress path
+            # decompress and move to destination
+            decompress_path = self.decompress(archive_path, Path(temp_directory))
             self.move_decompress_path(decompress_path, path)
 
-    @staticmethod
-    def move_decompress_path(decompress_path: Path, destination_path: Path):
+    def fetch_folder(self):
+        """Fetch a local folder and copy it."""
+        path = CACHE_FETCH / self.directory_name
+        folder_path = Path(self.url_parsed.path)
+
+        # copy if the path doesn't exist, or do nothing otherwise
+        if path.exists():
+            return
+
+        # check target folder exists
+        if not folder_path.exists():
+            raise FolderAccessError(
+                f"Cannot access {self.name} at {self.url}: folder not found"
+            )
+
+        try:
+            folder_path.copytree(path)
+
+        except OSError as error:
+            raise FolderCopyError(
+                f"Cannot copy {self.name} at {self.url}: {error}"
+            ) from error
+
+    def fetch_local_archive(self):
+        """Decompress a local archive."""
+        path = CACHE_FETCH / self.directory_name
+        archive_path = Path(self.url_parsed.path)
+
+        # fetch if the path doesn't exist, or do nothing otherwise
+        if path.exists():
+            return
+
+        # check target folder exists
+        if not archive_path.exists():
+            raise ArchiveAccessError(
+                f"Cannot access {self.name} at {self.url}: file not found"
+            )
+
+        with TemporaryDirectory() as temp_directory:
+            # decompress and move to destination
+            decompress_path = self.decompress(archive_path, Path(temp_directory))
+            self.move_decompress_path(decompress_path, path)
+
+    def decompress(self, archive_path: Path, temp_path: Path) -> Path:
+        """Decompress an archive in a temporary directory, then move it."""
+        # decompress file in a special directory, as we cannot list the
+        # content of the archive
+        decompress_path = temp_path / "extract"
+        decompress_path.mkdir_p()
+
+        try:
+            unpack_archive(archive_path, decompress_path)
+
+        except ReadError as error:
+            raise ArchiveDecompressError(
+                f"Cannot decompress archive of {self.name}: {error}"
+            ) from error
+
+        return decompress_path
+
+    def move_decompress_path(self, decompress_path: Path, destination_path: Path):
         """Move the decompress directory to destination.
 
         If the decompress directory contains one directory, move this
@@ -197,7 +265,13 @@ class Dependency:
             to_move_path = decompress_path
 
         # move to fetch directory
-        to_move_path.move(destination_path)
+        try:
+            to_move_path.move(destination_path)
+
+        except OSError as error:
+            raise ArchiveMoveError(
+                f"Cannot move archive of {self.name}: {error}"
+            ) from error
 
     def build(self):
         """Build the dependency."""
@@ -258,7 +332,23 @@ class ArchiveDecompressError(Dependen6makeError):
     pass
 
 
+class ArchiveMoveError(Dependen6makeError):
+    pass
+
+
+class ArchiveAccessError(Dependen6makeError):
+    pass
+
+
 class GitRepoFetchError(Dependen6makeError):
+    pass
+
+
+class FolderAccessError(Dependen6makeError):
+    pass
+
+
+class FolderCopyError(Dependen6makeError):
     pass
 
 

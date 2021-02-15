@@ -81,6 +81,9 @@ class TestRunInstall:
 
         with TemporaryDirectory() as temp_directory:
             with cd(Path(temp_directory)):
+                mocked_get_getcwd = mocker.patch.object(Path, "getcwd")
+                mocked_get_getcwd.return_value = Path("directory")
+
                 with resources.path("tests.resources", "") as directory:
                     directory_path = Path(directory)
                     args = Namespace(path=directory_path)
@@ -88,4 +91,7 @@ class TestRunInstall:
                     run_install(args, output)
 
         content = output.getvalue()
-        assert f"You can call CMake with -DCMAKE_PREFIX_PATH={CACHE_INSTALL}" in content
+        assert (
+            f"You can now call CMake with -DCMAKE_PREFIX_PATH=directory/{CACHE_INSTALL}"
+            in content
+        )

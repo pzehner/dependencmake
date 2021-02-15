@@ -114,7 +114,10 @@ def run_install(args: Namespace, output=sys.stdout):
 
     output.write("Done\n\n")
 
-    output.write(f"You can call CMake with {CMAKE_PREFIX_PATH.format(CACHE_INSTALL)}\n")
+    install_path = Path.getcwd() / CACHE_INSTALL
+    output.write(
+        f"You can now call CMake with {CMAKE_PREFIX_PATH.format(install_path)}\n"
+    )
 
 
 def main():
