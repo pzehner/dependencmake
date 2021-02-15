@@ -1,6 +1,8 @@
 from argparse import Namespace
 from io import StringIO
 
+from path import Path
+
 from dependen6make.__main__ import get_parser, run_create_config
 
 
@@ -18,11 +20,11 @@ class TestRunCreateConfig:
             "dependen6make.__main__.create_config", autospec=True
         )
 
-        args = Namespace(force=True)
+        args = Namespace(path=Path("path"), force=True)
         output = StringIO()
         run_create_config(args, output)
 
         content = output.getvalue()
         assert "Config file created in dependen6make.yaml" in content
 
-        mocked_create_config.assert_called_with(True)
+        mocked_create_config.assert_called_with(Path("path"), True)

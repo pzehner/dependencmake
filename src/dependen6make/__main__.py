@@ -61,7 +61,7 @@ def get_parser() -> ArgumentParser:
 
 def run_create_config(args: Namespace, output=sys.stdout):
     """Run the create-config command."""
-    create_config(args.force)
+    create_config(args.path, args.force)
 
     output.write(f"Config file created in {CONFIG_NAME}\n")
 

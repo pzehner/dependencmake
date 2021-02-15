@@ -15,19 +15,19 @@ from dependen6make.exceptions import Dependen6makeError
 CONFIG_NAME = "dependen6make.yaml"
 
 
-def create_config(force: bool = False):
+def create_config(directory: Path, force: bool = False):
     """Create a new config file.
 
     If config file already exists and not in force mode, ask for overwrite.
     """
-    destination = Path(CONFIG_NAME)
+    destination = directory / CONFIG_NAME
     if destination.exists() and not force:
         overwrite_str = input(f"{CONFIG_NAME} exists, overwrite? (yes/no) ")
         if not (overwrite_str and strtobool(overwrite_str)):
             return
 
     with path("dependen6make.resources", CONFIG_NAME) as resource:
-        Path(resource).copy(CONFIG_NAME)
+        Path(resource).copy(destination)
 
 
 def get_config(path: Path) -> dict:

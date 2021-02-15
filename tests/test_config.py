@@ -23,12 +23,13 @@ class TestCreateConfig:
             Pathlib("resources") / "dependen6make.yaml"
         )
 
-        create_config()
+        create_config(Path("path"))
 
-        mocked_exists.assert_called_with("dependen6make.yaml")
+        mocked_exists.assert_called_with(Path("path") / "dependen6make.yaml")
         mocked_path.assert_called()
         mocked_copy.assert_called_with(
-            Path("resources") / "dependen6make.yaml", "dependen6make.yaml"
+            Path("resources") / "dependen6make.yaml",
+            Path("path") / "dependen6make.yaml",
         )
 
     def test_create_exists_overwrite(self, mocker):
@@ -43,10 +44,11 @@ class TestCreateConfig:
         mocked_input = mocker.patch("dependen6make.config.input")
         mocked_input.return_value = "yes"
 
-        create_config()
+        create_config(Path("path"))
 
         mocked_copy.assert_called_with(
-            Path("resources") / "dependen6make.yaml", "dependen6make.yaml"
+            Path("resources") / "dependen6make.yaml",
+            Path("path") / "dependen6make.yaml",
         )
 
     def test_create_exists_no_overwrite(self, mocker):
@@ -61,7 +63,7 @@ class TestCreateConfig:
         mocked_input = mocker.patch("dependen6make.config.input")
         mocked_input.return_value = "no"
 
-        create_config()
+        create_config(Path("path"))
 
         mocked_copy.assert_not_called()
 
@@ -75,10 +77,11 @@ class TestCreateConfig:
             Pathlib("resources") / "dependen6make.yaml"
         )
 
-        create_config(True)
+        create_config(Path("path"), True)
 
         mocked_copy.assert_called_with(
-            Path("resources") / "dependen6make.yaml", "dependen6make.yaml"
+            Path("resources") / "dependen6make.yaml",
+            Path("path") / "dependen6make.yaml",
         )
 
 
