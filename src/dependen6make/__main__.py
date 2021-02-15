@@ -4,9 +4,11 @@ from argparse import ArgumentParser, Namespace
 
 from path import Path
 
+from dependen6make.cmake import CMAKE_PREFIX_PATH
 from dependen6make.config import get_config, check_config
 from dependen6make.dependency_list import DependencyList
 from dependen6make.exceptions import Dependen6makeError
+from dependen6make.filesystem import CACHE_INSTALL
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +32,12 @@ def get_parser() -> ArgumentParser:
     # build parser
     build_parser = subparsers.add_parser("build", help="fetch and build dependencies")
     build_parser.set_defaults(function=run_build)
+
+    # install parser
+    install_parser = subparsers.add_parser(
+        "install", help="fetch, build and install dependencies"
+    )
+    install_parser.set_defaults(function=run_install)
 
     # add path to source last
     parser.add_argument(
@@ -61,6 +69,8 @@ def run_fetch(args: Namespace, output=sys.stdout):
     dependency_list.create_dependencies(config["dependencies"])
     dependency_list.fetch(output)
 
+    output.write("Done\n")
+
 
 def run_build(args: Namespace, output=sys.stdout):
     """Run the build command."""
@@ -71,6 +81,24 @@ def run_build(args: Namespace, output=sys.stdout):
     dependency_list.create_dependencies(config["dependencies"])
     dependency_list.fetch(output)
     dependency_list.build(output)
+
+    output.write("Done\n")
+
+
+def run_install(args: Namespace, output=sys.stdout):
+    """Run the install command."""
+    config = get_config(args.path)
+    check_config(config)
+
+    dependency_list = DependencyList()
+    dependency_list.create_dependencies(config["dependencies"])
+    dependency_list.fetch(output)
+    dependency_list.build(output)
+    dependency_list.install(output)
+
+    output.write("Done\n\n")
+
+    output.write(f"You can call CMake with {CMAKE_PREFIX_PATH.format(CACHE_INSTALL)}\n")
 
 
 def main():

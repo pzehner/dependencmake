@@ -6,10 +6,22 @@ from path import Path
 from dependen6make.exceptions import Dependen6makeError
 
 
+CMAKE = "cmake"
+CMAKE_BUILD = "--build"
+CMAKE_BUILD_PATH = "-B"
+CMAKE_INSTALL = "--install"
+CMAKE_INSTALL_PREFIX = "-DCMAKE_INSTALL_PREFIX={}"
+CMAKE_LISTS_FILE = "CMakeLists.txt"
+CMAKE_PARALLEL = "--parallel"
+CMAKE_PREFIX_PATH = "-DCMAKE_PREFIX_PATH={}"
+CMAKE_SOURCE_PATH = "-S"
+CMAKE_VERSION = "--version"
+
+
 def check_cmake_exists():
     """Check if CMake executable is available."""
     try:
-        run(["cmake", "--version"], stdout=DEVNULL, stderr=DEVNULL, check=True)
+        run([CMAKE, CMAKE_VERSION], stdout=DEVNULL, stderr=DEVNULL, check=True)
 
     except FileNotFoundError as error:
         raise CMakeNotFoundError("CMake executable was not found") from error
@@ -27,13 +39,13 @@ def cmake_configure(
 ):
     """Configure a project with CMake."""
     command = [
-        "cmake",
-        f"-DCMAKE_INSTALL_PREFIX={install_path}",
-        f"-DCMAKE_PREFIX_PATH={install_path}",
+        CMAKE,
+        CMAKE_INSTALL_PREFIX.format(install_path),
+        CMAKE_PREFIX_PATH.format(install_path),
         *extra_args,
-        "-S",
+        CMAKE_SOURCE_PATH,
         source_path,
-        "-B",
+        CMAKE_BUILD_PATH,
         build_path,
     ]
     output = get_output(quiet)
@@ -55,10 +67,10 @@ def cmake_build(
 ):
     """Build a project with CMake."""
     command = [
-        "cmake",
-        "--build",
+        CMAKE,
+        CMAKE_BUILD,
         build_path,
-        "--parallel",
+        CMAKE_PARALLEL,
         str(jobs),
     ]
     output = get_output(quiet)
@@ -69,6 +81,27 @@ def cmake_build(
     except CalledProcessError as error:
         raise CMakeBuildError(
             f"Build failed with code {error.returncode}: {error.stderr.decode()}"
+        ) from error
+
+
+def cmake_install(
+    build_path: Path,
+    quiet: bool = True,
+):
+    """Install a project with CMake."""
+    command = [
+        CMAKE,
+        CMAKE_INSTALL,
+        build_path,
+    ]
+    output = get_output(quiet)
+
+    try:
+        run(command, stdout=output, stderr=output, check=True)
+
+    except CalledProcessError as error:
+        raise CMakeInstallError(
+            f"Install failed with code {error.returncode}: {error.stderr.decode()}"
         ) from error
 
 
@@ -93,4 +126,8 @@ class CMakeConfigureError(Dependen6makeError):
 
 
 class CMakeBuildError(Dependen6makeError):
+    pass
+
+
+class CMakeInstallError(Dependen6makeError):
     pass

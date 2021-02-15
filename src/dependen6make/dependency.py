@@ -11,11 +11,13 @@ from furl import furl
 from git import GitCommandError, Repo
 from path import Path
 
-from dependen6make.commands import (
+from dependen6make.cmake import (
     cmake_build,
     cmake_configure,
+    cmake_install,
     CMakeBuildError,
     CMakeConfigureError,
+    CMakeInstallError,
 )
 from dependen6make.exceptions import Dependen6makeError
 from dependen6make.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
@@ -38,6 +40,7 @@ class Dependency:
     url_parsed: furl = None
     fetched: bool = False
     built: bool = False
+    installed: bool = False
 
     def __post_init__(self):
         # parse URL
@@ -212,6 +215,17 @@ class Dependency:
         # mark as built
         self.built = True
 
+    def install(self):
+        """Install the dependency."""
+        try:
+            cmake_install(CACHE_BUILD / self.directory_name)
+
+        except CMakeInstallError as error:
+            raise InstallError(f"Cannot install {self.name}: {error}") from error
+
+        # mark as installed
+        self.installed = True
+
 
 class UnknownDependencyTypeError(Dependen6makeError):
     pass
@@ -234,4 +248,8 @@ class ConfigureError(Dependen6makeError):
 
 
 class BuildError(Dependen6makeError):
+    pass
+
+
+class InstallError(Dependen6makeError):
     pass

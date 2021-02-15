@@ -14,9 +14,14 @@ from dependen6make.dependency import (
     ConfigureError,
     Dependency,
     GitRepoFetchError,
+    InstallError,
     UnknownDependencyTypeError,
 )
-from dependen6make.commands import CMakeBuildError, CMakeConfigureError
+from dependen6make.cmake import (
+    CMakeBuildError,
+    CMakeConfigureError,
+    CMakeInstallError,
+)
 from dependen6make.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
@@ -387,7 +392,7 @@ class TestDependency:
 
     def test_describe_after_build(self, zip_dependency, mocker):
         """Describe a dependency after build."""
-        mocker.patch("dependen6make.commands.run")
+        mocker.patch("dependen6make.cmake.run")
 
         output = StringIO()
         zip_dependency.build()
@@ -399,3 +404,27 @@ class TestDependency:
             "Directory name: my_zip_dep_355bfa4061a06c4d22ad5df3d74233a7",
             "Built",
         ]
+
+    def test_install(self, mocker, dependency):
+        """Install a dependency."""
+        mocked_cmake_install = mocker.patch(
+            "dependen6make.dependency.cmake_install", autospec=True
+        )
+
+        assert not dependency.installed
+        dependency.install()
+        assert dependency.installed
+
+        mocked_cmake_install.assert_called_with(
+            CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93"
+        )
+
+    def test_install_error(self, mocker, dependency):
+        """Error when installing a dependency."""
+        mocked_cmake_install = mocker.patch(
+            "dependen6make.dependency.cmake_install", autospec=True
+        )
+        mocked_cmake_install.side_effect = CMakeInstallError("error")
+
+        with pytest.raises(InstallError, match=r"Cannot install My dep: error"):
+            dependency.install()
