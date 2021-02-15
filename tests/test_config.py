@@ -1,12 +1,85 @@
+from pathlib import Path as Pathlib
+
 import pytest
 from path import Path
 
 from dependen6make.config import (
     check_config,
     ConfigNotFoundError,
+    create_config,
     get_config,
     IncorrectConfigError,
 )
+
+
+class TestCreateConfig:
+    def test_create(self, mocker):
+        """Create a config file in empty directory."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = False
+        mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
+        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path.return_value.__enter__.return_value = (
+            Pathlib("resources") / "dependen6make.yaml"
+        )
+
+        create_config()
+
+        mocked_exists.assert_called_with("dependen6make.yaml")
+        mocked_path.assert_called()
+        mocked_copy.assert_called_with(
+            Path("resources") / "dependen6make.yaml", "dependen6make.yaml"
+        )
+
+    def test_create_exists_overwrite(self, mocker):
+        """Overwrite a config file."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = True
+        mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
+        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path.return_value.__enter__.return_value = (
+            Pathlib("resources") / "dependen6make.yaml"
+        )
+        mocked_input = mocker.patch("dependen6make.config.input")
+        mocked_input.return_value = "yes"
+
+        create_config()
+
+        mocked_copy.assert_called_with(
+            Path("resources") / "dependen6make.yaml", "dependen6make.yaml"
+        )
+
+    def test_create_exists_no_overwrite(self, mocker):
+        """Don't overwrite a config file."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = True
+        mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
+        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path.return_value.__enter__.return_value = (
+            Pathlib("resources") / "dependen6make.yaml"
+        )
+        mocked_input = mocker.patch("dependen6make.config.input")
+        mocked_input.return_value = "no"
+
+        create_config()
+
+        mocked_copy.assert_not_called()
+
+    def test_create_exists_force(self, mocker):
+        """Force overwrite a config file."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = True
+        mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
+        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path.return_value.__enter__.return_value = (
+            Pathlib("resources") / "dependen6make.yaml"
+        )
+
+        create_config(True)
+
+        mocked_copy.assert_called_with(
+            Path("resources") / "dependen6make.yaml", "dependen6make.yaml"
+        )
 
 
 class TestGetConfig:

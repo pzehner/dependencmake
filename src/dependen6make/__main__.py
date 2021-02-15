@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from path import Path
 
 from dependen6make.cmake import CMAKE_PREFIX_PATH
-from dependen6make.config import get_config, check_config
+from dependen6make.config import get_config, check_config, CONFIG_NAME, create_config
 from dependen6make.dependency_list import DependencyList
 from dependen6make.exceptions import Dependen6makeError
 from dependen6make.filesystem import CACHE_INSTALL
@@ -20,6 +20,15 @@ def get_parser() -> ArgumentParser:
         prog="dependen6make", description="Dependence manager for projects using CMake"
     )
     subparsers = parser.add_subparsers()
+
+    # create config parser
+    create_config_parser = subparsers.add_parser(
+        "create-config", help="create a new configuration file"
+    )
+    create_config_parser.set_defaults(function=run_create_config)
+    create_config_parser.add_argument(
+        "-f", "--force", action="store_true", help="overwrite any existing config file"
+    )
 
     # list parser
     list_parser = subparsers.add_parser("list", help="list dependencies")
@@ -48,6 +57,13 @@ def get_parser() -> ArgumentParser:
     )
 
     return parser
+
+
+def run_create_config(args: Namespace, output=sys.stdout):
+    """Run the create-config command."""
+    create_config(args.force)
+
+    output.write(f"Config file created in {CONFIG_NAME}\n")
 
 
 def run_list(args: Namespace, output=sys.stdout):

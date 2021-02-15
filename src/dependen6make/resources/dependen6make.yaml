@@ -1,0 +1,38 @@
+# list of the dependencies with their options
+dependencies:
+  # - name: My dependency
+  # name of the dependency, used for display
+  # mandatory
+  #
+  #   url: http://my_server/my_dep.zip
+  # URL where to get the dependency
+  # can be a Git repository (must end by .git) or an archive (must end by .zip,
+  # .tar, .tar.bz2, .tbz2, .tar.gz, .tgz, .tar.xz or .txz)
+  # mandatory
+  #
+  #   git_hash: 424242
+  # Git hash to checkout to in case of Git repository
+  # the hash can be a commit hash or a tag
+  # optional
+  #
+  #   cmake_subdir: project/source
+  # subdirectory where to find the CMakeLists.txt file if it is not in the top
+  # directory
+  # optional
+  #
+  #   cmake_args: -DUSE_MPI=ON
+  # specific arguments to pass to CMake at configuration time
+  # optional
+  #
+  #   jobs: 1
+  # number of jobs to use when building the dependency
+  # by default, number of CPU cores * 2 + 1
+  # optional
+  #
+  # full example:
+  # - name: My dependency
+  #   url: http://my_server/my_dep.git
+  #   git_hash: 424242
+  #   cmake_subdir: project/source
+  #   cmake_args: -DUSE_MPI=ON
+  #   jobs: 1

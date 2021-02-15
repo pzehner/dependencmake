@@ -1,4 +1,7 @@
-from dependen6make.__main__ import get_parser
+from argparse import Namespace
+from io import StringIO
+
+from dependen6make.__main__ import get_parser, run_create_config
 
 
 class TestGetParser:
@@ -6,3 +9,20 @@ class TestGetParser:
         """Get a parser."""
         parser = get_parser()
         assert parser is not None
+
+
+class TestRunCreateConfig:
+    def test_run(self, mocker):
+        """Run the create-config command."""
+        mocked_create_config = mocker.patch(
+            "dependen6make.__main__.create_config", autospec=True
+        )
+
+        args = Namespace(force=True)
+        output = StringIO()
+        run_create_config(args, output)
+
+        content = output.getvalue()
+        assert "Config file created in dependen6make.yaml" in content
+
+        mocked_create_config.assert_called_with(True)
