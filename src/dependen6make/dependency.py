@@ -12,6 +12,7 @@ from git import GitCommandError, Repo
 from path import Path
 
 from dependen6make.cmake import (
+    check_cmake_lists_file_exists,
     cmake_build,
     cmake_configure,
     cmake_install,
@@ -34,6 +35,7 @@ class Dependency:
     name: str
     url: str
     git_hash: str = ""
+    cmake_subdir: Path = None
     cmake_args: str = ""
     jobs: int = 0
     directory_name: str = ""
@@ -75,14 +77,20 @@ class Dependency:
         """Describe dependency in text."""
         output.write(f"Name: {self.name}\n")
         output.write(f"URL: {self.url}\n")
+
         if self.git_hash:
             output.write(f"Git hash: {self.git_hash}\n")
+
+        if self.cmake_subdir:
+            output.write(f"Directory with CMake files: {self.cmake_subdir}\n")
 
         if self.cmake_args:
             output.write(f"CMake arguments: {self.cmake_args}\n")
 
         if self.jobs:
             output.write(f"Jobs for building: {self.jobs}\n")
+
+        output.write("\n")
 
         output.write(f"Directory name: {self.directory_name}\n")
 
@@ -193,9 +201,19 @@ class Dependency:
 
     def build(self):
         """Build the dependency."""
+        # set source directory
+        source_directory = CACHE_FETCH / self.directory_name
+
+        if self.cmake_subdir:
+            source_directory /= self.cmake_subdir
+
+        # check there is a CMakeLists.txt file in it
+        check_cmake_lists_file_exists(source_directory)
+
+        # configure
         try:
             cmake_configure(
-                CACHE_FETCH / self.directory_name,
+                source_directory,
                 CACHE_BUILD / self.directory_name,
                 CACHE_INSTALL,
                 self.cmake_args.split(),
@@ -204,6 +222,7 @@ class Dependency:
         except CMakeConfigureError as error:
             raise ConfigureError(f"Cannot configure {self.name}: {error}") from error
 
+        # build
         try:
             cmake_build(
                 CACHE_BUILD / self.directory_name, self.jobs or (CPU_CORES * 2 + 1)

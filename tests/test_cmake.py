@@ -5,12 +5,14 @@ from path import Path
 
 from dependen6make.cmake import (
     check_cmake_exists,
+    check_cmake_lists_file_exists,
     cmake_build,
     cmake_configure,
     cmake_install,
     CMakeBuildError,
     CMakeConfigureError,
     CMakeInstallError,
+    CMakeListsFileNotFound,
     CMakeNotFoundError,
     CMakeNotUseableError,
     get_output,
@@ -47,6 +49,27 @@ class TestCheckCMakeExists:
             CMakeNotUseableError, match=r"CMake executable cannot be run"
         ):
             check_cmake_exists()
+
+
+class TestCmakeListsFileExists:
+    def test_check(self, mocker):
+        """CMake lists file exists."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = True
+
+        check_cmake_lists_file_exists(Path("path"))
+
+        mocked_exists.assert_called_with(Path("path") / "CMakeLists.txt")
+
+    def test_check_not_found(self, mocker):
+        """CMake lists file doesn't exist."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = False
+
+        with pytest.raises(
+            CMakeListsFileNotFound, match=r"CMakeLists.txt not found in path"
+        ):
+            check_cmake_lists_file_exists(Path("path"))
 
 
 class TestCMakeConfigure:

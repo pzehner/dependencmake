@@ -30,6 +30,12 @@ def check_cmake_exists():
         raise CMakeNotUseableError("CMake executable cannot be run") from error
 
 
+def check_cmake_lists_file_exists(path: Path):
+    """Check if CMake lists file exists in the provided directory."""
+    if not (path / CMAKE_LISTS_FILE).exists():
+        raise CMakeListsFileNotFound(f"{CMAKE_LISTS_FILE} not found in {path}")
+
+
 def cmake_configure(
     source_path: Path,
     build_path: Path,
@@ -118,6 +124,10 @@ class CMakeNotFoundError(Dependen6makeError):
 
 
 class CMakeNotUseableError(Dependen6makeError):
+    pass
+
+
+class CMakeListsFileNotFound(Dependen6makeError):
     pass
 
 

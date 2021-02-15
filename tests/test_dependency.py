@@ -37,6 +37,13 @@ def dependency():
 
 
 @pytest.fixture
+def subdir_dependency():
+    return Dependency(
+        name="My dep", url="http://example.com/dependency", cmake_subdir="subdir"
+    )
+
+
+@pytest.fixture
 def git_dependency():
     return Dependency(
         name="My Git dep",
@@ -89,6 +96,20 @@ class TestDependency:
             "Git hash: 424242",
             "CMake arguments: -DCMAKE_ARG=ON",
             "Jobs for building: 1",
+            "",
+            "Directory name: my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
+        ]
+
+    def test_describe_subdir(self, subdir_dependency):
+        """Describe a dependency with CMake subdirectory."""
+        output = StringIO()
+        subdir_dependency.describe(output)
+        lines = output.getvalue().splitlines()
+        assert lines == [
+            "Name: My dep",
+            "URL: http://example.com/dependency",
+            "Directory with CMake files: subdir",
+            "",
             "Directory name: my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
         ]
 
@@ -312,6 +333,7 @@ class TestDependency:
         assert lines == [
             "Name: My zip dep",
             "URL: http://example.com/dependency.zip",
+            "",
             "Directory name: my_zip_dep_355bfa4061a06c4d22ad5df3d74233a7",
             "Fetched",
         ]
@@ -340,6 +362,9 @@ class TestDependency:
 
     def test_build(self, mocker, dependency):
         """Build a dependency."""
+        mocked_cmake_lists_file_exists = mocker.patch(
+            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+        )
         mocked_cmake_configure = mocker.patch(
             "dependen6make.dependency.cmake_configure", autospec=True
         )
@@ -352,6 +377,9 @@ class TestDependency:
         dependency.build()
         assert dependency.build
 
+        mocked_cmake_lists_file_exists.assert_called_with(
+            CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93"
+        )
         mocked_cmake_configure.assert_called_with(
             CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
             CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
@@ -362,8 +390,39 @@ class TestDependency:
             CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93", 1
         )
 
+    def test_build_subdir(self, mocker, subdir_dependency):
+        """Build a dependency with source in a subdirectory."""
+        mocked_cmake_lists_file_exists = mocker.patch(
+            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+        )
+        mocked_cmake_configure = mocker.patch(
+            "dependen6make.dependency.cmake_configure", autospec=True
+        )
+        mocked_cmake_build = mocker.patch(
+            "dependen6make.dependency.cmake_build", autospec=True
+        )
+        mocker.patch("dependen6make.dependency.CPU_CORES", 1)
+
+        subdir_dependency.build()
+
+        mocked_cmake_lists_file_exists.assert_called_with(
+            CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93" / "subdir"
+        )
+        mocked_cmake_configure.assert_called_with(
+            CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93" / "subdir",
+            CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
+            CACHE_INSTALL,
+            [],
+        )
+        mocked_cmake_build.assert_called_with(
+            CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93", 3
+        )
+
     def test_build_error_configure(self, mocker, dependency):
         """Configure error when building a dependency."""
+        mocker.patch(
+            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+        )
         mocked_cmake_configure = mocker.patch(
             "dependen6make.dependency.cmake_configure", autospec=True
         )
@@ -380,6 +439,9 @@ class TestDependency:
 
     def test_build_error_build(self, mocker, dependency):
         """Build error when building a dependency."""
+        mocker.patch(
+            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+        )
         mocker.patch("dependen6make.dependency.cmake_configure", autospec=True)
         mocked_cmake_build = mocker.patch(
             "dependen6make.dependency.cmake_build", autospec=True
@@ -392,6 +454,9 @@ class TestDependency:
 
     def test_describe_after_build(self, zip_dependency, mocker):
         """Describe a dependency after build."""
+        mocker.patch(
+            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+        )
         mocker.patch("dependen6make.cmake.run")
 
         output = StringIO()
@@ -401,6 +466,7 @@ class TestDependency:
         assert lines == [
             "Name: My zip dep",
             "URL: http://example.com/dependency.zip",
+            "",
             "Directory name: my_zip_dep_355bfa4061a06c4d22ad5df3d74233a7",
             "Built",
         ]

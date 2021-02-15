@@ -55,6 +55,9 @@ class TestRunBuild:
         mocker.patch("dependen6make.dependency.urlretrieve")
         mocker.patch("dependen6make.dependency.unpack_archive")
         mocker.patch("dependen6make.cmake.run")
+        mocker.patch(
+            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+        )
 
         with TemporaryDirectory() as temp_directory:
             with cd(Path(temp_directory)):
@@ -72,6 +75,9 @@ class TestRunInstall:
         mocker.patch("dependen6make.dependency.urlretrieve")
         mocker.patch("dependen6make.dependency.unpack_archive")
         mocker.patch("dependen6make.cmake.run")
+        mocker.patch(
+            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+        )
 
         with TemporaryDirectory() as temp_directory:
             with cd(Path(temp_directory)):
