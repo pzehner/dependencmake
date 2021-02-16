@@ -63,7 +63,7 @@ class TestRunBuild:
             with cd(Path(temp_directory)):
                 with resources.path("tests.resources", "") as directory:
                     directory_path = Path(directory)
-                    args = Namespace(path=directory_path, force=False)
+                    args = Namespace(path=directory_path, force=False, rest=[])
                     output = StringIO()
                     run_build(args, output)
 
@@ -86,7 +86,7 @@ class TestRunInstall:
 
                 with resources.path("tests.resources", "") as directory:
                     directory_path = Path(directory)
-                    args = Namespace(path=directory_path, force=False)
+                    args = Namespace(path=directory_path, force=False, rest=[])
                     output = StringIO()
                     run_install(args, output)
 

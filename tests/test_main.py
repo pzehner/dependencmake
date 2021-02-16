@@ -50,7 +50,7 @@ class TestRunBuild:
             "dependencmake.__main__.DependencyList"
         )
 
-        args = Namespace(path=Path("path"), force=True)
+        args = Namespace(path=Path("path"), force=True, rest=[])
         output = StringIO()
         run_build(args, output)
 
@@ -58,6 +58,24 @@ class TestRunBuild:
         mocked_check_config.assert_called()
         mocked_clean.assert_called_with(fetch=True, build=True)
         mocked_dependency_list_class.assert_called()
+
+    def test_run_extra(self, mocker):
+        """Run the build command with CMake arguments."""
+        mocker.patch("dependencmake.__main__.get_config")
+        mocker.patch("dependencmake.__main__.check_config")
+        mocked_clean = mocker.patch("dependencmake.__main__.clean")
+        mocked_dependency_list_class = mocker.patch(
+            "dependencmake.__main__.DependencyList"
+        )
+
+        args = Namespace(path=Path("path"), force=False, rest=["-DCMAKE_ARG=ON"])
+        output = StringIO()
+        run_build(args, output)
+
+        mocked_clean.assert_not_called()
+        mocked_dependency_list_class.return_value.build.assert_called_with(
+            ["-DCMAKE_ARG=ON"], output
+        )
 
 
 class TestRunInstall:
@@ -70,7 +88,7 @@ class TestRunInstall:
             "dependencmake.__main__.DependencyList"
         )
 
-        args = Namespace(path=Path("path"), force=True)
+        args = Namespace(path=Path("path"), force=True, rest=[])
         output = StringIO()
         run_install(args, output)
 
@@ -78,6 +96,24 @@ class TestRunInstall:
         mocked_check_config.assert_called()
         mocked_clean.assert_called_with(fetch=True, build=True, install=True)
         mocked_dependency_list_class.assert_called()
+
+    def test_run_extra(self, mocker):
+        """Run the install command with CMake arguments."""
+        mocker.patch("dependencmake.__main__.get_config")
+        mocker.patch("dependencmake.__main__.check_config")
+        mocked_clean = mocker.patch("dependencmake.__main__.clean")
+        mocked_dependency_list_class = mocker.patch(
+            "dependencmake.__main__.DependencyList"
+        )
+
+        args = Namespace(path=Path("path"), force=False, rest=["-DCMAKE_ARG=ON"])
+        output = StringIO()
+        run_install(args, output)
+
+        mocked_clean.assert_not_called()
+        mocked_dependency_list_class.return_value.build.assert_called_with(
+            ["-DCMAKE_ARG=ON"], output
+        )
 
 
 class TestRunCreateConfig:

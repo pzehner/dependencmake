@@ -273,7 +273,7 @@ class Dependency:
                 f"Cannot move archive of {self.name}: {error}"
             ) from error
 
-    def build(self):
+    def build(self, extra_args: list = []):
         """Build the dependency."""
         # set source directory
         source_directory = CACHE_FETCH / self.directory_name
@@ -290,7 +290,7 @@ class Dependency:
                 source_directory,
                 CACHE_BUILD / self.directory_name,
                 CACHE_INSTALL,
-                self.cmake_args.split(),
+                [*self.cmake_args.split(), *extra_args],
             )
 
         except CMakeConfigureError as error:

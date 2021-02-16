@@ -1,6 +1,6 @@
 import logging
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, REMAINDER
 
 from path import Path
 
@@ -35,21 +35,51 @@ def get_parser() -> ArgumentParser:
     create_config_parser.add_argument(
         "-f", "--force", action="store_true", help="overwrite any existing config file"
     )
+    create_config_parser.add_argument(
+        "path",
+        type=Path,
+        help="explicitly specify a source directory",
+        metavar="path-to-source",
+    )
 
     # list parser
     list_parser = subparsers.add_parser("list", help="list dependencies")
     list_parser.set_defaults(function=run_list)
+    list_parser.add_argument(
+        "path",
+        type=Path,
+        help="explicitly specify a source directory",
+        metavar="path-to-source",
+    )
 
     # fetch parser
     fetch_parser = subparsers.add_parser("fetch", help="fetch dependencies")
     fetch_parser.set_defaults(function=run_fetch)
     fetch_parser.add_argument("-f", "--force", help="clean fetch cache beforehand")
+    fetch_parser.add_argument(
+        "path",
+        type=Path,
+        help="explicitly specify a source directory",
+        metavar="path-to-source",
+    )
 
     # build parser
     build_parser = subparsers.add_parser("build", help="fetch and build dependencies")
     build_parser.set_defaults(function=run_build)
     build_parser.add_argument(
         "-f", "--force", help="clean fetch and build caches beforehand"
+    )
+    build_parser.add_argument(
+        "path",
+        type=Path,
+        help="explicitly specify a source directory",
+        metavar="path-to-source",
+    )
+    build_parser.add_argument(
+        "rest",
+        nargs=REMAINDER,
+        metavar="cmake-args",
+        help="other arguments will be passed to CMake at configure step",
     )
 
     # install parser
@@ -59,6 +89,18 @@ def get_parser() -> ArgumentParser:
     install_parser.set_defaults(function=run_install)
     install_parser.add_argument(
         "-f", "--force", help="clean fetch, build and install caches beforehand"
+    )
+    install_parser.add_argument(
+        "path",
+        type=Path,
+        help="explicitly specify a source directory",
+        metavar="path-to-source",
+    )
+    install_parser.add_argument(
+        "rest",
+        nargs=REMAINDER,
+        metavar="cmake-args",
+        help="other arguments will be passed to CMake at configure step",
     )
 
     # clean parser
@@ -80,14 +122,6 @@ def get_parser() -> ArgumentParser:
     )
     clean_parser.add_argument(
         "-a", "--all", action="store_true", help="clean all caches"
-    )
-
-    # add path to source last
-    parser.add_argument(
-        "path",
-        type=Path,
-        help="explicitly specify a source directory",
-        metavar="path-to-source",
     )
 
     return parser
@@ -136,7 +170,7 @@ def run_build(args: Namespace, output=sys.stdout):
     dependency_list = DependencyList()
     dependency_list.create_dependencies(config["dependencies"])
     dependency_list.fetch(output)
-    dependency_list.build(output)
+    dependency_list.build(args.rest, output)
 
     output.write("Done\n")
 
@@ -152,7 +186,7 @@ def run_install(args: Namespace, output=sys.stdout):
     dependency_list = DependencyList()
     dependency_list.create_dependencies(config["dependencies"])
     dependency_list.fetch(output)
-    dependency_list.build(output)
+    dependency_list.build(args.rest, output)
     dependency_list.install(output)
 
     output.write("Done\n\n")

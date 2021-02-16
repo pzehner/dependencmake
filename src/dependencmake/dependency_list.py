@@ -39,7 +39,7 @@ class DependencyList:
         for dependency in tqdm(self.dependencies, file=output, leave=False):
             dependency.fetch()
 
-    def build(self, output=sys.stdout):
+    def build(self, extra_args: list = [], output=sys.stdout):
         """Build dependencies."""
         # create build cache
         CACHE_BUILD.mkdir_p()
@@ -50,7 +50,7 @@ class DependencyList:
         # build
         output.write("Building dependencies...\n")
         for dependency in tqdm(self.dependencies, file=output, leave=False):
-            dependency.build()
+            dependency.build(extra_args)
 
     def install(self, output=sys.stdout):
         """Install dependencies."""

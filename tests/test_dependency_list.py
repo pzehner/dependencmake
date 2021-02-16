@@ -68,11 +68,11 @@ class TestDependencyList:
         mocked_build = mocker.patch.object(Dependency, "build")
 
         output = StringIO()
-        dependency_list.build(output)
+        dependency_list.build(["-DCMAKE_ARG=ON"], output)
 
         mocked_mkdir_p.assert_called_with(CACHE_BUILD)
         mocked_check_cmake_exists.assert_called_with()
-        mocked_build.assert_called_with()
+        mocked_build.assert_called_with(["-DCMAKE_ARG=ON"])
 
     def test_install(self, dependency_list, mocker):
         """Install dependencies in list."""

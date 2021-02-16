@@ -613,6 +613,28 @@ class TestDependency:
             CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93", 3
         )
 
+    def test_build_extra_arguments(self, mocker, dependency):
+        """Build a dependency with extra CMake arguments passed."""
+        mocker.patch(
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
+        )
+        mocked_cmake_configure = mocker.patch(
+            "dependencmake.dependency.cmake_configure", autospec=True
+        )
+        mocker.patch("dependencmake.dependency.cmake_build", autospec=True)
+        mocker.patch("dependencmake.dependency.CPU_CORES", 1)
+
+        assert not dependency.built
+        dependency.build(["-DCMAKE_ARG1=ON", "-DCMAKE_ARG2=OFF"])
+        assert dependency.build
+
+        mocked_cmake_configure.assert_called_with(
+            CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
+            CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
+            CACHE_INSTALL,
+            ["-DCMAKE_ARG=ON", "-DCMAKE_ARG1=ON", "-DCMAKE_ARG2=OFF"],
+        )
+
     def test_build_error_configure(self, mocker, dependency):
         """Configure error when building a dependency."""
         mocker.patch(
