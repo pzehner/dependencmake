@@ -8,7 +8,7 @@ from dependencmake.cmake import CMAKE_PREFIX_PATH
 from dependencmake.config import get_config, check_config, CONFIG_NAME, create_config
 from dependencmake.dependency_list import DependencyList
 from dependencmake.exceptions import DependenCmakeError
-from dependencmake.filesystem import CACHE_INSTALL
+from dependencmake.filesystem import CACHE_INSTALL, clean
 from dependencmake.version import __version__, __date__
 
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def get_parser() -> ArgumentParser:
     """Create a parser."""
     parser = ArgumentParser(
-        prog="dependencmake", description="Dependence manager for projects using CMake"
+        prog="dependencmake", description="Dependence manager for projects using CMake."
     )
     subparsers = parser.add_subparsers()
 
@@ -43,16 +43,44 @@ def get_parser() -> ArgumentParser:
     # fetch parser
     fetch_parser = subparsers.add_parser("fetch", help="fetch dependencies")
     fetch_parser.set_defaults(function=run_fetch)
+    fetch_parser.add_argument("-f", "--force", help="clean fetch cache beforehand")
 
     # build parser
     build_parser = subparsers.add_parser("build", help="fetch and build dependencies")
     build_parser.set_defaults(function=run_build)
+    build_parser.add_argument(
+        "-f", "--force", help="clean fetch and build caches beforehand"
+    )
 
     # install parser
     install_parser = subparsers.add_parser(
         "install", help="fetch, build and install dependencies"
     )
     install_parser.set_defaults(function=run_install)
+    install_parser.add_argument(
+        "-f", "--force", help="clean fetch, build and install caches beforehand"
+    )
+
+    # clean parser
+    clean_parser = subparsers.add_parser(
+        "clean",
+        help="clean cache",
+        description="Clean cache directories. By default, only the build "
+        "cache is cleaned.",
+    )
+    clean_parser.set_defaults(function=run_clean)
+    clean_parser.add_argument(
+        "-f", "--fetch", action="store_true", help="clean fetch cache"
+    )
+    clean_parser.add_argument(
+        "-b", "--build", action="store_true", help="clean build cache"
+    )
+    clean_parser.add_argument(
+        "-i", "--install", action="store_true", help="clean install cache"
+    )
+    clean_parser.add_argument(
+        "-a", "--all", action="store_true", help="clean all caches"
+    )
 
     # add path to source last
     parser.add_argument(
@@ -87,6 +115,9 @@ def run_fetch(args: Namespace, output=sys.stdout):
     config = get_config(args.path)
     check_config(config)
 
+    if args.force:
+        clean(fetch=True)
+
     dependency_list = DependencyList()
     dependency_list.create_dependencies(config["dependencies"])
     dependency_list.fetch(output)
@@ -98,6 +129,9 @@ def run_build(args: Namespace, output=sys.stdout):
     """Run the build command."""
     config = get_config(args.path)
     check_config(config)
+
+    if args.force:
+        clean(fetch=True, build=True)
 
     dependency_list = DependencyList()
     dependency_list.create_dependencies(config["dependencies"])
@@ -112,6 +146,9 @@ def run_install(args: Namespace, output=sys.stdout):
     config = get_config(args.path)
     check_config(config)
 
+    if args.force:
+        clean(fetch=True, build=True, install=True)
+
     dependency_list = DependencyList()
     dependency_list.create_dependencies(config["dependencies"])
     dependency_list.fetch(output)
@@ -124,6 +161,17 @@ def run_install(args: Namespace, output=sys.stdout):
     output.write(
         f"You can now call CMake with {CMAKE_PREFIX_PATH.format(install_path)}\n"
     )
+
+
+def run_clean(args: Namespace, output=sys.stdout):
+    """Run the clean command."""
+    clean(
+        fetch=args.fetch or args.all,
+        build=args.build or args.all or not (args.fetch or args.build or args.install),
+        install=args.install or args.all,
+    )
+
+    output.write("Cache cleaned\n")
 
 
 def main():
