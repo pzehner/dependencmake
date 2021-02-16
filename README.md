@@ -44,10 +44,24 @@ More info on the accepted parameters in the [configuration file](#configuration-
 
 The program accepts several actions:
 
+- `create-config` to create a new configuration file;
 - `list` to list dependencies collected in the configuration file;
 - `fetch` to fetch dependencies and copy them on local disk;
 - `build` to fetch and build dependencies;
-- `install` to fetch, build and install dependencies.
+- `install` to fetch, build and install dependencies;
+- `clean` to clean the cache.
+
+The `build` and `install` actions will take any other arguments and pass them directly to CMake at configure step.
+
+Example:
+
+```sh
+mkdir build
+cd build
+dependencmake install .. -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_PREFIX_PATH=$PWD/dependencmake/install -DCMAKE_BUILD_TYPE=Release
+make
+```
 
 ## Configuration file
 
@@ -78,3 +92,20 @@ Each item contains the following possible keys:
   Number of jobs to use when building the dependency.
   By default, number of CPU cores * 2 + 1.
   Optional.
+
+## Cache
+
+DependenCmake will put generated data in a `dependencmake` cache folder in the current working directory:
+
+```
+dependencmake/
++-- build/
++-- fetch/
++-- install/
+```
+
+It's pretty clear what the purpose of each subfolder of the cache is.
+`fetch` and `build` both contain a subfolder for each dependency.
+The dependency directory name is the lower case and slugified name of the dependency, appended with a MD5 hash of the URL.
+This allows to make the directory unique per couple name/URL and humanly readable.
+`install` has no logic enforced and is populated according to the `install` directives of the `CMakeLists.txt` files of the dependencies.
