@@ -3,7 +3,7 @@ from typing import Optional
 
 from path import Path
 
-from dependen6make.exceptions import Dependen6makeError
+from dependencmake.exceptions import DependenCmakeError
 
 
 CMAKE = "cmake"
@@ -119,25 +119,25 @@ def get_output(quiet: bool) -> Optional[int]:
     return None
 
 
-class CMakeNotFoundError(Dependen6makeError):
+class CMakeNotFoundError(DependenCmakeError):
     pass
 
 
-class CMakeNotUseableError(Dependen6makeError):
+class CMakeNotUseableError(DependenCmakeError):
     pass
 
 
-class CMakeListsFileNotFound(Dependen6makeError):
+class CMakeListsFileNotFound(DependenCmakeError):
     pass
 
 
-class CMakeConfigureError(Dependen6makeError):
+class CMakeConfigureError(DependenCmakeError):
     pass
 
 
-class CMakeBuildError(Dependen6makeError):
+class CMakeBuildError(DependenCmakeError):
     pass
 
 
-class CMakeInstallError(Dependen6makeError):
+class CMakeInstallError(DependenCmakeError):
     pass

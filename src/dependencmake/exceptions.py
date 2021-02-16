@@ -1,0 +1,2 @@
+class DependenCmakeError(Exception):
+    pass

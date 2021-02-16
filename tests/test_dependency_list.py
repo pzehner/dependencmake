@@ -4,9 +4,9 @@ from unittest.mock import call
 import pytest
 from path import Path
 
-from dependen6make.dependency import Dependency
-from dependen6make.dependency_list import DependencyList
-from dependen6make.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
+from dependencmake.dependency import Dependency
+from dependencmake.dependency_list import DependencyList
+from dependencmake.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
 @pytest.fixture
@@ -63,7 +63,7 @@ class TestDependencyList:
         """Build dependencies in list."""
         mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
         mocked_check_cmake_exists = mocker.patch(
-            "dependen6make.dependency_list.check_cmake_exists"
+            "dependencmake.dependency_list.check_cmake_exists"
         )
         mocked_build = mocker.patch.object(Dependency, "build")
 
@@ -78,7 +78,7 @@ class TestDependencyList:
         """Install dependencies in list."""
         mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
         mocked_check_cmake_exists = mocker.patch(
-            "dependen6make.dependency_list.check_cmake_exists"
+            "dependencmake.dependency_list.check_cmake_exists"
         )
         mocked_install = mocker.patch.object(Dependency, "install")
 

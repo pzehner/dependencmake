@@ -3,7 +3,7 @@ from io import StringIO
 
 from path import Path
 
-from dependen6make.__main__ import get_parser, run_create_config
+from dependencmake.__main__ import get_parser, run_create_config
 
 
 class TestGetParser:
@@ -17,7 +17,7 @@ class TestRunCreateConfig:
     def test_run(self, mocker):
         """Run the create-config command."""
         mocked_create_config = mocker.patch(
-            "dependen6make.__main__.create_config", autospec=True
+            "dependencmake.__main__.create_config", autospec=True
         )
 
         args = Namespace(path=Path("path"), force=True)
@@ -25,6 +25,6 @@ class TestRunCreateConfig:
         run_create_config(args, output)
 
         content = output.getvalue()
-        assert "Config file created in dependen6make.yaml" in content
+        assert "Config file created in dependencmake.yaml" in content
 
         mocked_create_config.assert_called_with(Path("path"), True)

@@ -1,3 +1,3 @@
 recursive-include tests *.py
-include tests/resources/dependen6make.yaml
-include src/dependen6make/resources/dependen6make.yaml
+include tests/resources/dependencmake.yaml
+include src/dependencmake/resources/dependencmake.yaml

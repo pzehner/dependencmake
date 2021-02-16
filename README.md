@@ -1,4 +1,4 @@
-# Dependen6make
+# DependenCmake
 
 Yet another dependency manager for projects using CMake.
 
@@ -15,13 +15,13 @@ pip install .
 The generic usage of the command is:
 
 ```sh
-ENV=value dependen6make action path/to/cmake/dir
+ENV=value dependencmake action path/to/cmake/dir
 ```
 
 which is pretty close to how CMake is called.
-The program will fetch/build/install desired dependencies and stored the result of the different actions in a `dependen6make` directory in the current directory.
+The program will fetch/build/install desired dependencies and stored the result of the different actions in a `dependencmake` directory in the current directory.
 
-The program will look for a `dependen6make.yaml` file in the specified directory, where dependencies are listed:
+The program will look for a `dependencmake.yaml` file in the specified directory, where dependencies are listed:
 
 ```yaml
 dependencies:

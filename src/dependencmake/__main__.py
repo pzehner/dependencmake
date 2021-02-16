@@ -4,11 +4,11 @@ from argparse import ArgumentParser, Namespace
 
 from path import Path
 
-from dependen6make.cmake import CMAKE_PREFIX_PATH
-from dependen6make.config import get_config, check_config, CONFIG_NAME, create_config
-from dependen6make.dependency_list import DependencyList
-from dependen6make.exceptions import Dependen6makeError
-from dependen6make.filesystem import CACHE_INSTALL
+from dependencmake.cmake import CMAKE_PREFIX_PATH
+from dependencmake.config import get_config, check_config, CONFIG_NAME, create_config
+from dependencmake.dependency_list import DependencyList
+from dependencmake.exceptions import DependenCmakeError
+from dependencmake.filesystem import CACHE_INSTALL
 
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def get_parser() -> ArgumentParser:
     """Create a parser."""
     parser = ArgumentParser(
-        prog="dependen6make", description="Dependence manager for projects using CMake"
+        prog="dependencmake", description="Dependence manager for projects using CMake"
     )
     subparsers = parser.add_subparsers()
 
@@ -127,7 +127,7 @@ def main():
     try:
         args.function(args)
 
-    except Dependen6makeError as error:
+    except DependenCmakeError as error:
         logger.critical(error)
         exit(1)
 

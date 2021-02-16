@@ -3,7 +3,7 @@ from subprocess import CalledProcessError, DEVNULL, PIPE
 import pytest
 from path import Path
 
-from dependen6make.cmake import (
+from dependencmake.cmake import (
     check_cmake_exists,
     check_cmake_lists_file_exists,
     cmake_build,
@@ -22,7 +22,7 @@ from dependen6make.cmake import (
 class TestCheckCMakeExists:
     def test_check(self, mocker):
         """CMake was found."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
 
         check_cmake_exists()
 
@@ -32,7 +32,7 @@ class TestCheckCMakeExists:
 
     def test_check_error_not_found(self, mocker):
         """CMake was not found."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
         mocked_run.side_effect = FileNotFoundError("not found")
 
         with pytest.raises(CMakeNotFoundError, match=r"CMake executable was not found"):
@@ -40,7 +40,7 @@ class TestCheckCMakeExists:
 
     def test_check_error(self, mocker):
         """CMake cannot be run."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
         mocked_run.side_effect = CalledProcessError(
             returncode=128, cmd="cmd", output=None, stderr=None
         )
@@ -75,7 +75,7 @@ class TestCmakeListsFileExists:
 class TestCMakeConfigure:
     def test_configure(self, mocker):
         """Configure a project."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
 
         cmake_configure(
             Path("source"),
@@ -103,7 +103,7 @@ class TestCMakeConfigure:
 
     def test_configure_error(self, mocker):
         """Error when configuring a project."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
         mocked_run.side_effect = CalledProcessError(
             returncode=128,
             cmd="cmd",
@@ -125,7 +125,7 @@ class TestCMakeConfigure:
 class TestCMakeBuild:
     def test_build(self, mocker):
         """Build a project."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
 
         cmake_build(
             Path("build"),
@@ -147,7 +147,7 @@ class TestCMakeBuild:
 
     def test_build_error(self, mocker):
         """Error when building a project."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
         mocked_run.side_effect = CalledProcessError(
             returncode=128,
             cmd="cmd",
@@ -167,7 +167,7 @@ class TestCMakeBuild:
 class TestCMakeInstall:
     def test_install(self, mocker):
         """Install a project."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
 
         cmake_install(
             Path("build"),
@@ -186,7 +186,7 @@ class TestCMakeInstall:
 
     def test_install_error(self, mocker):
         """Error when installing a project."""
-        mocked_run = mocker.patch("dependen6make.cmake.run", autospec=True)
+        mocked_run = mocker.patch("dependencmake.cmake.run", autospec=True)
         mocked_run.side_effect = CalledProcessError(
             returncode=128,
             cmd="cmd",

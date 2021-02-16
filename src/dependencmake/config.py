@@ -9,10 +9,10 @@ except ImportError:
 from path import Path
 from yaml import load, Loader
 
-from dependen6make.exceptions import Dependen6makeError
+from dependencmake.exceptions import DependenCmakeError
 
 
-CONFIG_NAME = "dependen6make.yaml"
+CONFIG_NAME = "dependencmake.yaml"
 
 
 def create_config(directory: Path, force: bool = False):
@@ -26,7 +26,7 @@ def create_config(directory: Path, force: bool = False):
         if not (overwrite_str and strtobool(overwrite_str)):
             return
 
-    with path("dependen6make.resources", CONFIG_NAME) as resource:
+    with path("dependencmake.resources", CONFIG_NAME) as resource:
         Path(resource).copy(destination)
 
 
@@ -45,9 +45,9 @@ def check_config(config: dict):
         raise IncorrectConfigError("Key 'dependencies' missing from config")
 
 
-class ConfigNotFoundError(Dependen6makeError):
+class ConfigNotFoundError(DependenCmakeError):
     pass
 
 
-class IncorrectConfigError(Dependen6makeError):
+class IncorrectConfigError(DependenCmakeError):
     pass

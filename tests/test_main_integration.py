@@ -6,8 +6,8 @@ from tempfile import TemporaryDirectory
 
 from path import Path
 
-from dependen6make.__main__ import run_build, run_fetch, run_install, run_list
-from dependen6make.filesystem import CACHE_INSTALL
+from dependencmake.__main__ import run_build, run_fetch, run_install, run_list
+from dependencmake.filesystem import CACHE_INSTALL
 
 
 @contextmanager
@@ -35,9 +35,9 @@ class TestRunList:
 class TestRunFetch:
     def test_run(self, mocker):
         """Fetch dependencies."""
-        mocker.patch("dependen6make.dependency.Repo")
-        mocker.patch("dependen6make.dependency.urlretrieve")
-        mocker.patch("dependen6make.dependency.unpack_archive")
+        mocker.patch("dependencmake.dependency.Repo")
+        mocker.patch("dependencmake.dependency.urlretrieve")
+        mocker.patch("dependencmake.dependency.unpack_archive")
 
         with TemporaryDirectory() as temp_directory:
             with cd(Path(temp_directory)):
@@ -51,12 +51,12 @@ class TestRunFetch:
 class TestRunBuild:
     def test_run(self, mocker):
         """Build dependencies."""
-        mocker.patch("dependen6make.dependency.Repo")
-        mocker.patch("dependen6make.dependency.urlretrieve")
-        mocker.patch("dependen6make.dependency.unpack_archive")
-        mocker.patch("dependen6make.cmake.run")
+        mocker.patch("dependencmake.dependency.Repo")
+        mocker.patch("dependencmake.dependency.urlretrieve")
+        mocker.patch("dependencmake.dependency.unpack_archive")
+        mocker.patch("dependencmake.cmake.run")
         mocker.patch(
-            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
 
         with TemporaryDirectory() as temp_directory:
@@ -71,12 +71,12 @@ class TestRunBuild:
 class TestRunInstall:
     def test_run(self, mocker):
         """Install dependencies."""
-        mocker.patch("dependen6make.dependency.Repo")
-        mocker.patch("dependen6make.dependency.urlretrieve")
-        mocker.patch("dependen6make.dependency.unpack_archive")
-        mocker.patch("dependen6make.cmake.run")
+        mocker.patch("dependencmake.dependency.Repo")
+        mocker.patch("dependencmake.dependency.urlretrieve")
+        mocker.patch("dependencmake.dependency.unpack_archive")
+        mocker.patch("dependencmake.cmake.run")
         mocker.patch(
-            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
 
         with TemporaryDirectory() as temp_directory:

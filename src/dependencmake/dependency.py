@@ -11,7 +11,7 @@ from furl import furl
 from git import GitCommandError, Repo
 from path import Path
 
-from dependen6make.cmake import (
+from dependencmake.cmake import (
     check_cmake_lists_file_exists,
     cmake_build,
     cmake_configure,
@@ -20,8 +20,8 @@ from dependen6make.cmake import (
     CMakeConfigureError,
     CMakeInstallError,
 )
-from dependen6make.exceptions import Dependen6makeError
-from dependen6make.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
+from dependencmake.exceptions import DependenCmakeError
+from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
 ARCHIVE_EXTENSIONS = [ext for format in get_unpack_formats() for ext in format[1]]
@@ -320,45 +320,45 @@ class Dependency:
         self.installed = True
 
 
-class UnknownDependencyTypeError(Dependen6makeError):
+class UnknownDependencyTypeError(DependenCmakeError):
     pass
 
 
-class ArchiveDownloadError(Dependen6makeError):
+class ArchiveDownloadError(DependenCmakeError):
     pass
 
 
-class ArchiveDecompressError(Dependen6makeError):
+class ArchiveDecompressError(DependenCmakeError):
     pass
 
 
-class ArchiveMoveError(Dependen6makeError):
+class ArchiveMoveError(DependenCmakeError):
     pass
 
 
-class ArchiveAccessError(Dependen6makeError):
+class ArchiveAccessError(DependenCmakeError):
     pass
 
 
-class GitRepoFetchError(Dependen6makeError):
+class GitRepoFetchError(DependenCmakeError):
     pass
 
 
-class FolderAccessError(Dependen6makeError):
+class FolderAccessError(DependenCmakeError):
     pass
 
 
-class FolderCopyError(Dependen6makeError):
+class FolderCopyError(DependenCmakeError):
     pass
 
 
-class ConfigureError(Dependen6makeError):
+class ConfigureError(DependenCmakeError):
     pass
 
 
-class BuildError(Dependen6makeError):
+class BuildError(DependenCmakeError):
     pass
 
 
-class InstallError(Dependen6makeError):
+class InstallError(DependenCmakeError):
     pass

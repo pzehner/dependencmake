@@ -9,7 +9,7 @@ from furl import furl
 from git import GitCommandError
 from path import Path
 
-from dependen6make.dependency import (
+from dependencmake.dependency import (
     ArchiveAccessError,
     ArchiveDecompressError,
     ArchiveDownloadError,
@@ -23,12 +23,12 @@ from dependen6make.dependency import (
     InstallError,
     UnknownDependencyTypeError,
 )
-from dependen6make.cmake import (
+from dependencmake.cmake import (
     CMakeBuildError,
     CMakeConfigureError,
     CMakeInstallError,
 )
-from dependen6make.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
+from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
 @pytest.fixture
@@ -204,7 +204,7 @@ class TestDependency:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = False
         mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
-        mocked_repo = mocker.patch("dependen6make.dependency.Repo")
+        mocked_repo = mocker.patch("dependencmake.dependency.Repo")
 
         git_dependency.fetch_git()
 
@@ -226,7 +226,7 @@ class TestDependency:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = False
         mocker.patch.object(Path, "mkdir_p", autospec=True)
-        mocked_repo = mocker.patch("dependen6make.dependency.Repo")
+        mocked_repo = mocker.patch("dependencmake.dependency.Repo")
         mocked_repo.clone_from.side_effect = GitCommandError("error message", "000")
 
         with pytest.raises(
@@ -240,7 +240,7 @@ class TestDependency:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = True
         mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
-        mocked_repo = mocker.patch("dependen6make.dependency.Repo")
+        mocked_repo = mocker.patch("dependencmake.dependency.Repo")
 
         git_dependency.fetch_git()
 
@@ -256,7 +256,7 @@ class TestDependency:
         """Fetch an archive already fetched."""
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = True
-        mocked_urlretrieve = mocker.patch("dependen6make.dependency.urlretrieve")
+        mocked_urlretrieve = mocker.patch("dependencmake.dependency.urlretrieve")
 
         zip_dependency.fetch_archive()
 
@@ -270,10 +270,10 @@ class TestDependency:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = False
         mocked_temporary_directory_class = mocker.patch(
-            "dependen6make.dependency.TemporaryDirectory"
+            "dependencmake.dependency.TemporaryDirectory"
         )
         mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
-        mocked_urlretrieve = mocker.patch("dependen6make.dependency.urlretrieve")
+        mocked_urlretrieve = mocker.patch("dependencmake.dependency.urlretrieve")
         mocked_decompress = mocker.patch.object(Dependency, "decompress")
         mocked_decompress.return_value = Path("temp") / "extract"
         mocked_move_decompress_path = mocker.patch.object(
@@ -298,10 +298,10 @@ class TestDependency:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = False
         mocked_temporary_directory_class = mocker.patch(
-            "dependen6make.dependency.TemporaryDirectory"
+            "dependencmake.dependency.TemporaryDirectory"
         )
         mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
-        mocked_urlretrieve = mocker.patch("dependen6make.dependency.urlretrieve")
+        mocked_urlretrieve = mocker.patch("dependencmake.dependency.urlretrieve")
         mocked_urlretrieve.side_effect = HTTPError(
             "url", "000", "error", "hdrs", MagicMock()
         )
@@ -323,7 +323,7 @@ class TestDependency:
     def test_decompress(self, mocker, zip_dependency):
         """Decompress an archive."""
         mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
-        mocked_unpack_archive = mocker.patch("dependen6make.dependency.unpack_archive")
+        mocked_unpack_archive = mocker.patch("dependencmake.dependency.unpack_archive")
 
         decompress_path = zip_dependency.decompress(
             Path("dependency.zip"), Path("temp")
@@ -338,7 +338,7 @@ class TestDependency:
     def test_decompress_error(self, mocker, zip_dependency):
         """Error when decompressing an archive."""
         mocker.patch.object(Path, "mkdir_p", autospec=True)
-        mocked_unpack_archive = mocker.patch("dependen6make.dependency.unpack_archive")
+        mocked_unpack_archive = mocker.patch("dependencmake.dependency.unpack_archive")
         mocked_unpack_archive.side_effect = ReadError("error")
 
         with pytest.raises(
@@ -450,7 +450,7 @@ class TestDependency:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.side_effect = [False, True]
         mocked_temporary_directory_class = mocker.patch(
-            "dependen6make.dependency.TemporaryDirectory"
+            "dependencmake.dependency.TemporaryDirectory"
         )
         mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
         mocked_decompress = mocker.patch.object(Dependency, "decompress")
@@ -514,11 +514,11 @@ class TestDependency:
         mocked_exists.return_value = False
         mocker.patch.object(Path, "mkdir_p", autospec=True)
         mocked_temporary_directory_class = mocker.patch(
-            "dependen6make.dependency.TemporaryDirectory"
+            "dependencmake.dependency.TemporaryDirectory"
         )
         mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
-        mocker.patch("dependen6make.dependency.urlretrieve")
-        mocker.patch("dependen6make.dependency.unpack_archive")
+        mocker.patch("dependencmake.dependency.urlretrieve")
+        mocker.patch("dependencmake.dependency.unpack_archive")
         mocker.patch.object(Dependency, "move_decompress_path")
 
         output = StringIO()
@@ -558,15 +558,15 @@ class TestDependency:
     def test_build(self, mocker, dependency):
         """Build a dependency."""
         mocked_cmake_lists_file_exists = mocker.patch(
-            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
         mocked_cmake_configure = mocker.patch(
-            "dependen6make.dependency.cmake_configure", autospec=True
+            "dependencmake.dependency.cmake_configure", autospec=True
         )
         mocked_cmake_build = mocker.patch(
-            "dependen6make.dependency.cmake_build", autospec=True
+            "dependencmake.dependency.cmake_build", autospec=True
         )
-        mocker.patch("dependen6make.dependency.CPU_CORES", 1)
+        mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         assert not dependency.built
         dependency.build()
@@ -588,15 +588,15 @@ class TestDependency:
     def test_build_subdir(self, mocker, subdir_dependency):
         """Build a dependency with source in a subdirectory."""
         mocked_cmake_lists_file_exists = mocker.patch(
-            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
         mocked_cmake_configure = mocker.patch(
-            "dependen6make.dependency.cmake_configure", autospec=True
+            "dependencmake.dependency.cmake_configure", autospec=True
         )
         mocked_cmake_build = mocker.patch(
-            "dependen6make.dependency.cmake_build", autospec=True
+            "dependencmake.dependency.cmake_build", autospec=True
         )
-        mocker.patch("dependen6make.dependency.CPU_CORES", 1)
+        mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         subdir_dependency.build()
 
@@ -616,16 +616,16 @@ class TestDependency:
     def test_build_error_configure(self, mocker, dependency):
         """Configure error when building a dependency."""
         mocker.patch(
-            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
         mocked_cmake_configure = mocker.patch(
-            "dependen6make.dependency.cmake_configure", autospec=True
+            "dependencmake.dependency.cmake_configure", autospec=True
         )
         mocked_cmake_configure.side_effect = CMakeConfigureError("error")
         mocked_cmake_build = mocker.patch(
-            "dependen6make.dependency.cmake_build", autospec=True
+            "dependencmake.dependency.cmake_build", autospec=True
         )
-        mocker.patch("dependen6make.dependency.CPU_CORES", 1)
+        mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         with pytest.raises(ConfigureError, match=r"Cannot configure My dep: error"):
             dependency.build()
@@ -635,14 +635,14 @@ class TestDependency:
     def test_build_error_build(self, mocker, dependency):
         """Build error when building a dependency."""
         mocker.patch(
-            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
-        mocker.patch("dependen6make.dependency.cmake_configure", autospec=True)
+        mocker.patch("dependencmake.dependency.cmake_configure", autospec=True)
         mocked_cmake_build = mocker.patch(
-            "dependen6make.dependency.cmake_build", autospec=True
+            "dependencmake.dependency.cmake_build", autospec=True
         )
         mocked_cmake_build.side_effect = CMakeBuildError("error")
-        mocker.patch("dependen6make.dependency.CPU_CORES", 1)
+        mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         with pytest.raises(BuildError, match=r"Cannot build My dep: error"):
             dependency.build()
@@ -650,9 +650,9 @@ class TestDependency:
     def test_describe_after_build(self, zip_dependency, mocker):
         """Describe a dependency after build."""
         mocker.patch(
-            "dependen6make.dependency.check_cmake_lists_file_exists", autospec=True
+            "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
-        mocker.patch("dependen6make.cmake.run")
+        mocker.patch("dependencmake.cmake.run")
 
         output = StringIO()
         zip_dependency.build()
@@ -669,7 +669,7 @@ class TestDependency:
     def test_install(self, mocker, dependency):
         """Install a dependency."""
         mocked_cmake_install = mocker.patch(
-            "dependen6make.dependency.cmake_install", autospec=True
+            "dependencmake.dependency.cmake_install", autospec=True
         )
 
         assert not dependency.installed
@@ -683,7 +683,7 @@ class TestDependency:
     def test_install_error(self, mocker, dependency):
         """Error when installing a dependency."""
         mocked_cmake_install = mocker.patch(
-            "dependen6make.dependency.cmake_install", autospec=True
+            "dependencmake.dependency.cmake_install", autospec=True
         )
         mocked_cmake_install.side_effect = CMakeInstallError("error")
 

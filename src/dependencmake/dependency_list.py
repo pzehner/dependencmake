@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 
 from tqdm import tqdm
 
-from dependen6make.cmake import check_cmake_exists
-from dependen6make.dependency import Dependency
-from dependen6make.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
+from dependencmake.cmake import check_cmake_exists
+from dependencmake.dependency import Dependency
+from dependencmake.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
 @dataclass

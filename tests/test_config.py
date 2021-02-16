@@ -3,7 +3,7 @@ from pathlib import Path as Pathlib
 import pytest
 from path import Path
 
-from dependen6make.config import (
+from dependencmake.config import (
     check_config,
     ConfigNotFoundError,
     create_config,
@@ -18,18 +18,18 @@ class TestCreateConfig:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = False
         mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
-        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path = mocker.patch("dependencmake.config.path", autospec=True)
         mocked_path.return_value.__enter__.return_value = (
-            Pathlib("resources") / "dependen6make.yaml"
+            Pathlib("resources") / "dependencmake.yaml"
         )
 
         create_config(Path("path"))
 
-        mocked_exists.assert_called_with(Path("path") / "dependen6make.yaml")
+        mocked_exists.assert_called_with(Path("path") / "dependencmake.yaml")
         mocked_path.assert_called()
         mocked_copy.assert_called_with(
-            Path("resources") / "dependen6make.yaml",
-            Path("path") / "dependen6make.yaml",
+            Path("resources") / "dependencmake.yaml",
+            Path("path") / "dependencmake.yaml",
         )
 
     def test_create_exists_overwrite(self, mocker):
@@ -37,18 +37,18 @@ class TestCreateConfig:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = True
         mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
-        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path = mocker.patch("dependencmake.config.path", autospec=True)
         mocked_path.return_value.__enter__.return_value = (
-            Pathlib("resources") / "dependen6make.yaml"
+            Pathlib("resources") / "dependencmake.yaml"
         )
-        mocked_input = mocker.patch("dependen6make.config.input")
+        mocked_input = mocker.patch("dependencmake.config.input")
         mocked_input.return_value = "yes"
 
         create_config(Path("path"))
 
         mocked_copy.assert_called_with(
-            Path("resources") / "dependen6make.yaml",
-            Path("path") / "dependen6make.yaml",
+            Path("resources") / "dependencmake.yaml",
+            Path("path") / "dependencmake.yaml",
         )
 
     def test_create_exists_no_overwrite(self, mocker):
@@ -56,11 +56,11 @@ class TestCreateConfig:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = True
         mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
-        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path = mocker.patch("dependencmake.config.path", autospec=True)
         mocked_path.return_value.__enter__.return_value = (
-            Pathlib("resources") / "dependen6make.yaml"
+            Pathlib("resources") / "dependencmake.yaml"
         )
-        mocked_input = mocker.patch("dependen6make.config.input")
+        mocked_input = mocker.patch("dependencmake.config.input")
         mocked_input.return_value = "no"
 
         create_config(Path("path"))
@@ -72,16 +72,16 @@ class TestCreateConfig:
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
         mocked_exists.return_value = True
         mocked_copy = mocker.patch.object(Path, "copy", autospec=True)
-        mocked_path = mocker.patch("dependen6make.config.path", autospec=True)
+        mocked_path = mocker.patch("dependencmake.config.path", autospec=True)
         mocked_path.return_value.__enter__.return_value = (
-            Pathlib("resources") / "dependen6make.yaml"
+            Pathlib("resources") / "dependencmake.yaml"
         )
 
         create_config(Path("path"), True)
 
         mocked_copy.assert_called_with(
-            Path("resources") / "dependen6make.yaml",
-            Path("path") / "dependen6make.yaml",
+            Path("resources") / "dependencmake.yaml",
+            Path("path") / "dependencmake.yaml",
         )
 
 
@@ -96,8 +96,8 @@ class TestGetConfig:
         config = get_config(Path("path"))
         assert config == {"config": "value"}
 
-        mocked_exists.assert_called_with(Path("path") / "dependen6make.yaml")
-        mocked_text.assert_called_with(Path("path") / "dependen6make.yaml")
+        mocked_exists.assert_called_with(Path("path") / "dependencmake.yaml")
+        mocked_text.assert_called_with(Path("path") / "dependencmake.yaml")
 
     def test_not_found(self, mocker):
         """Error when getting not found config."""
@@ -108,7 +108,7 @@ class TestGetConfig:
         with pytest.raises(ConfigNotFoundError):
             get_config(Path("path"))
 
-        mocked_exists.assert_called_with(Path("path") / "dependen6make.yaml")
+        mocked_exists.assert_called_with(Path("path") / "dependencmake.yaml")
         mocked_text.assert_not_called()
 
 
