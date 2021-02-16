@@ -9,6 +9,7 @@ from dependencmake.config import get_config, check_config, CONFIG_NAME, create_c
 from dependencmake.dependency_list import DependencyList
 from dependencmake.exceptions import DependenCmakeError
 from dependencmake.filesystem import CACHE_INSTALL
+from dependencmake.version import __version__, __date__
 
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,11 @@ def get_parser() -> ArgumentParser:
         prog="dependencmake", description="Dependence manager for projects using CMake"
     )
     subparsers = parser.add_subparsers()
+
+    # version command
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__} ({__date__})"
+    )
 
     # create config parser
     create_config_parser = subparsers.add_parser(

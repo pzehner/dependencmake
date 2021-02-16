@@ -1,6 +1,13 @@
 # DependenCmake
 
-Yet another dependency manager for projects using CMake.
+Yet another dependency manager for projects using [CMake](https://cmake.org).
+
+According to CMake [documentation](https://cmake.org/cmake/help/git-stage/guide/using-dependencies/index.html), the best way to consume a CMake dependency is to install it and find it.
+Using includes just creates mess.
+
+This helper can fetch, build and install CMake dependencies in a specific directory that you can add to your project with `-DCMAKE_PREFIX_PATH`.
+It keeps your system environment clean as you won't mix libraries up.
+This can be also convenient for Fortran projects where installing libraries is not the standard due to the volatility of `mod` files.
 
 ## Install
 
@@ -33,11 +40,41 @@ dependencies:
     git_hash: 25481515
 ```
 
-More info on the accepted parameters in the configuration file section.
+More info on the accepted parameters in the [configuration file](#configuration-file) section.
 
 The program accepts several actions:
 
 - `list` to list dependencies collected in the configuration file;
-- `fetch` to fetch dependencies on local disk.
+- `fetch` to fetch dependencies and copy them on local disk;
+- `build` to fetch and build dependencies;
+- `install` to fetch, build and install dependencies.
 
+## Configuration file
 
+The configuration file uses the [YAML format](https://en.wikipedia.org/wiki/YAML).
+It stores dependencies information in the `dependencies` key as a list.
+Each item contains the following possible keys:
+
+- `name`:
+  Name of the dependency, used for display.
+  Mandatory;
+- `url`:
+  URL where to get the dependency.
+  Can be a Git repository, online only (must end by .git),
+  an archive, online or local (must end by .zip, .tar, .tar.bz2, .tbz2, .tar.gz, .tgz, .tar.xz or .txz),
+  or a plain directory, local only.
+  Mandatory;
+- `git_hash`:
+  Git hash to checkout to in case of Git repository.
+  The hash can be a commit hash or a tag.
+  Optional;
+- `cmake_subdir`:
+  Subdirectory where to find the CMakeLists.txt file if it is not in the top directory.
+  Optional;
+- `cmake_args`:
+  Specific arguments to pass to CMake at configuration time.
+  Optional;
+- `jobs`:
+  Number of jobs to use when building the dependency.
+  By default, number of CPU cores * 2 + 1.
+  Optional.
