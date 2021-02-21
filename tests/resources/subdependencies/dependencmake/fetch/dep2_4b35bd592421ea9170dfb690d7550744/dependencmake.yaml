@@ -1,0 +1,3 @@
+dependencies:
+  - name: Dep21
+    url: http://example.com/dep21.zip

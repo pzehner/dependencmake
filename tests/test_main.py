@@ -23,8 +23,6 @@ class TestGetParser:
 class TestRunFetch:
     def test_run_force(self, mocker):
         """Run the force fetch command."""
-        mocked_get_config = mocker.patch("dependencmake.__main__.get_config")
-        mocked_check_config = mocker.patch("dependencmake.__main__.check_config")
         mocked_clean = mocker.patch("dependencmake.__main__.clean")
         mocked_dependency_list_class = mocker.patch(
             "dependencmake.__main__.DependencyList"
@@ -34,8 +32,6 @@ class TestRunFetch:
         output = StringIO()
         run_fetch(args, output)
 
-        mocked_get_config.assert_called()
-        mocked_check_config.assert_called()
         mocked_clean.assert_called_with(fetch=True)
         mocked_dependency_list_class.assert_called()
 
@@ -43,8 +39,6 @@ class TestRunFetch:
 class TestRunBuild:
     def test_run_force(self, mocker):
         """Run the force build command."""
-        mocked_get_config = mocker.patch("dependencmake.__main__.get_config")
-        mocked_check_config = mocker.patch("dependencmake.__main__.check_config")
         mocked_clean = mocker.patch("dependencmake.__main__.clean")
         mocked_dependency_list_class = mocker.patch(
             "dependencmake.__main__.DependencyList"
@@ -54,15 +48,11 @@ class TestRunBuild:
         output = StringIO()
         run_build(args, output)
 
-        mocked_get_config.assert_called()
-        mocked_check_config.assert_called()
         mocked_clean.assert_called_with(fetch=True, build=True)
         mocked_dependency_list_class.assert_called()
 
     def test_run_extra(self, mocker):
         """Run the build command with CMake arguments."""
-        mocker.patch("dependencmake.__main__.get_config")
-        mocker.patch("dependencmake.__main__.check_config")
         mocked_clean = mocker.patch("dependencmake.__main__.clean")
         mocked_dependency_list_class = mocker.patch(
             "dependencmake.__main__.DependencyList"
@@ -81,8 +71,6 @@ class TestRunBuild:
 class TestRunInstall:
     def test_run_force(self, mocker):
         """Run the force install command."""
-        mocked_get_config = mocker.patch("dependencmake.__main__.get_config")
-        mocked_check_config = mocker.patch("dependencmake.__main__.check_config")
         mocked_clean = mocker.patch("dependencmake.__main__.clean")
         mocked_dependency_list_class = mocker.patch(
             "dependencmake.__main__.DependencyList"
@@ -92,15 +80,11 @@ class TestRunInstall:
         output = StringIO()
         run_install(args, output)
 
-        mocked_get_config.assert_called()
-        mocked_check_config.assert_called()
         mocked_clean.assert_called_with(fetch=True, build=True, install=True)
         mocked_dependency_list_class.assert_called()
 
     def test_run_extra(self, mocker):
         """Run the install command with CMake arguments."""
-        mocker.patch("dependencmake.__main__.get_config")
-        mocker.patch("dependencmake.__main__.check_config")
         mocked_clean = mocker.patch("dependencmake.__main__.clean")
         mocked_dependency_list_class = mocker.patch(
             "dependencmake.__main__.DependencyList"

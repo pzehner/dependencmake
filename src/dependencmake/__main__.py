@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace, REMAINDER
 from path import Path
 
 from dependencmake.cmake import CMAKE_PREFIX_PATH
-from dependencmake.config import get_config, check_config, CONFIG_NAME, create_config
+from dependencmake.config import CONFIG_NAME, create_config
 from dependencmake.dependency_list import DependencyList
 from dependencmake.exceptions import DependenCmakeError
 from dependencmake.filesystem import CACHE_INSTALL, clean
@@ -136,24 +136,20 @@ def run_create_config(args: Namespace, output=sys.stdout):
 
 def run_list(args: Namespace, output=sys.stdout):
     """Run the list command."""
-    config = get_config(args.path)
-    check_config(config)
-
     dependency_list = DependencyList()
-    dependency_list.create_dependencies(config["dependencies"])
+    dependency_list.create_dependencies(args.path)
+    dependency_list.create_subdependencies()
     dependency_list.describe(output)
 
 
 def run_fetch(args: Namespace, output=sys.stdout):
     """Run the fetch command."""
-    config = get_config(args.path)
-    check_config(config)
-
     if args.force:
         clean(fetch=True)
 
     dependency_list = DependencyList()
-    dependency_list.create_dependencies(config["dependencies"])
+    dependency_list.create_dependencies(args.path)
+    dependency_list.create_subdependencies()
     dependency_list.fetch(output)
 
     output.write("Done\n")
@@ -161,14 +157,12 @@ def run_fetch(args: Namespace, output=sys.stdout):
 
 def run_build(args: Namespace, output=sys.stdout):
     """Run the build command."""
-    config = get_config(args.path)
-    check_config(config)
-
     if args.force:
         clean(fetch=True, build=True)
 
     dependency_list = DependencyList()
-    dependency_list.create_dependencies(config["dependencies"])
+    dependency_list.create_dependencies(args.path)
+    dependency_list.create_subdependencies()
     dependency_list.fetch(output)
     dependency_list.build(args.rest, output)
 
@@ -177,14 +171,12 @@ def run_build(args: Namespace, output=sys.stdout):
 
 def run_install(args: Namespace, output=sys.stdout):
     """Run the install command."""
-    config = get_config(args.path)
-    check_config(config)
-
     if args.force:
         clean(fetch=True, build=True, install=True)
 
     dependency_list = DependencyList()
-    dependency_list.create_dependencies(config["dependencies"])
+    dependency_list.create_dependencies(args.path)
+    dependency_list.create_subdependencies()
     dependency_list.fetch(output)
     dependency_list.build(args.rest, output)
     dependency_list.install(output)

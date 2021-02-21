@@ -107,7 +107,7 @@ class TestDependency:
         with pytest.raises(TypeError):
             Dependency(name="My dep")
 
-    def test_describe(self, dependency):
+    def test_describe_dependency(self, dependency):
         """Describe a dependency."""
         output = StringIO()
         dependency.describe(output)
@@ -119,6 +119,23 @@ class TestDependency:
             "CMake arguments: -DCMAKE_ARG=ON",
             "Jobs for building: 1",
             "",
+            "Directory name: my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
+        ]
+
+    def test_describe_subdependency(self, dependency, zip_dependency):
+        """Describe a subdependency."""
+        dependency.parent = zip_dependency
+        output = StringIO()
+        dependency.describe(output)
+        lines = output.getvalue().splitlines()
+        assert lines == [
+            "Name: My dep",
+            "URL: http://example.com/dependency",
+            "Git hash: 424242",
+            "CMake arguments: -DCMAKE_ARG=ON",
+            "Jobs for building: 1",
+            "",
+            "Dependency of: My zip dep",
             "Directory name: my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
         ]
 

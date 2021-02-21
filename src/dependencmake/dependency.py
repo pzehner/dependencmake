@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from multiprocessing import cpu_count
 from shutil import get_unpack_formats, ReadError, unpack_archive
 from tempfile import TemporaryDirectory
+from typing import Optional
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
@@ -35,9 +36,10 @@ class Dependency:
     name: str
     url: str
     git_hash: str = ""
-    cmake_subdir: Path = None
+    cmake_subdir: Optional[Path] = None
     cmake_args: str = ""
     jobs: int = 0
+    parent: Optional["Dependency"] = None
     directory_name: str = ""
     url_parsed: furl = None
     fetched: bool = False
@@ -91,6 +93,9 @@ class Dependency:
             output.write(f"Jobs for building: {self.jobs}\n")
 
         output.write("\n")
+
+        if self.parent:
+            output.write(f"Dependency of: {self.parent.name}\n")
 
         output.write(f"Directory name: {self.directory_name}\n")
 

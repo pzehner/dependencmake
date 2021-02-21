@@ -12,30 +12,36 @@ from dependencmake.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INST
 @pytest.fixture
 def dependency_list():
     dependency_list = DependencyList()
-    dependency_list.create_dependencies(
-        [
-            {"name": "My dep 1", "url": "http://example.com/dep1"},
-            {"name": "My dep 2", "url": "http://example.com/dep2"},
-        ]
-    )
+    dependency_list.dependencies = [
+        Dependency(name="My dep 1", url="http://example.com/dep1"),
+        Dependency(name="My dep 2", url="http://example.com/dep2"),
+    ]
 
     return dependency_list
 
 
 class TestDependencyList:
-    def test_create_dependencies(self):
+    def test_create_dependencies(self, mocker):
         """Create dependencies from list."""
-        dependency_list = DependencyList()
-        assert len(dependency_list.dependencies) == 0
-        dependency_list.create_dependencies(
-            [
+        mocked_get_config = mocker.patch("dependencmake.dependency_list.get_config")
+        config = {
+            "dependencies": [
                 {"name": "My dep 1", "url": "http://example.com/dep1"},
                 {"name": "My dep 2", "url": "http://example.com/dep2"},
             ]
-        )
+        }
+        mocked_get_config.return_value = config
+        mocked_check_config = mocker.patch("dependencmake.dependency_list.check_config")
+
+        dependency_list = DependencyList()
+        assert len(dependency_list.dependencies) == 0
+        dependency_list.create_dependencies(Path("path"))
         assert len(dependency_list.dependencies) == 2
         assert isinstance(dependency_list.dependencies[0], Dependency)
         assert isinstance(dependency_list.dependencies[1], Dependency)
+
+        mocked_get_config.assert_called_with(Path("path"))
+        mocked_check_config.assert_called_with(config)
 
     def test_describe(self, dependency_list, mocker):
         """Describe dependencies in list."""

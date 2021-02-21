@@ -1,0 +1,5 @@
+dependencies:
+  - name: Dep1
+    url: http://example.com/dep1.zip
+  - name: Dep2
+    url: http://example.com/dep2.zip
