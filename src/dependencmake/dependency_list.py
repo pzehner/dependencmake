@@ -8,6 +8,7 @@ from tqdm import tqdm
 from dependencmake.cmake import check_cmake_exists
 from dependencmake.config import check_config, ConfigNotFoundError, get_config
 from dependencmake.dependency import Dependency
+from dependencmake.exceptions import DependenCmakeError
 from dependencmake.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
@@ -88,13 +89,50 @@ class DependencyList:
             self.dependencies, file=output, leave=False, unit="dependency"
         ):
             dependency.fetch()
+            dependency.set_cmake_project_data()
 
         # fetch subdependencies
         output.write("Fetching subdependencies if any...\n")
         with tqdm(file=output, leave=False, unit="subdependency") as progress_bar:
             for subdependency in self.generate_subdependencies():
                 subdependency.fetch()
+                subdependency.set_cmake_project_data()
                 progress_bar.update()
+
+    def check(self, output=sys.stdout):
+        """Check dependencies for impossible to manage patterns."""
+        output.write("Checking dependencies...\n")
+
+        for dependency in tqdm(
+            self.dependencies, file=output, leave=False, unit="dependency"
+        ):
+            # check diamond dependencies
+            for other_dependency in self.dependencies:
+                if other_dependency is dependency:
+                    continue
+
+                if dependency.cmake_project_name == other_dependency.cmake_project_name:
+                    # pass if the two versions exist and are the same
+                    if (
+                        dependency.cmake_project_version
+                        and dependency.cmake_project_version
+                        == other_dependency.cmake_project_version
+                    ):
+                        continue
+
+                    # pass if the two URLs and commit hash are the same
+                    if (
+                        dependency.url == other_dependency.url
+                        and dependency.git_hash == other_dependency.git_hash
+                    ):
+                        continue
+
+                    raise DiamondDependencyError(
+                        "Diamond dependency detected with two different versions:\n\n"
+                        f"{dependency.get_description()}\n\nand:\n\n"
+                        f"{other_dependency.get_description()}"
+
+                    )
 
     def build(self, extra_args: list = [], output=sys.stdout):
         """Build dependencies."""
@@ -125,3 +163,7 @@ class DependencyList:
             self.dependencies, file=output, leave=False, unit="dependency"
         ):
             dependency.install()
+
+
+class DiamondDependencyError(DependenCmakeError):
+    pass

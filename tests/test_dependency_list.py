@@ -1,11 +1,12 @@
 from io import StringIO
+from packaging import version
 from unittest.mock import call
 
 import pytest
 from path import Path
 
 from dependencmake.dependency import Dependency
-from dependencmake.dependency_list import DependencyList
+from dependencmake.dependency_list import DependencyList, DiamondDependencyError
 from dependencmake.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 
 
@@ -15,6 +16,27 @@ def dependency_list():
     dependency_list.dependencies = [
         Dependency(name="My dep 1", url="http://example.com/dep1"),
         Dependency(name="My dep 2", url="http://example.com/dep2"),
+    ]
+
+    return dependency_list
+
+
+@pytest.fixture
+def dependency_list_data():
+    dependency_list = DependencyList()
+    dependency_list.dependencies = [
+        Dependency(
+            name="My dep 1",
+            url="http://example.com/dep1",
+            cmake_project_name="Dep1",
+            cmake_project_version=version.parse("1.2.0"),
+        ),
+        Dependency(
+            name="My dep 1",
+            url="http://example.com/dep2",
+            cmake_project_name="Dep2",
+            cmake_project_version=version.parse("2.4.0"),
+        ),
     ]
 
     return dependency_list
@@ -58,12 +80,16 @@ class TestDependencyList:
         """Fetch dependencies in list."""
         mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
         mocked_fetch = mocker.patch.object(Dependency, "fetch")
+        mocked_set_cmake_project_data = mocker.patch.object(
+            Dependency, "set_cmake_project_data"
+        )
 
         output = StringIO()
         dependency_list.fetch(output)
 
         mocked_mkdir_p.assert_has_calls([call(CACHE), call(CACHE_FETCH)])
         mocked_fetch.assert_called_with()
+        mocked_set_cmake_project_data.assert_called_with()
 
     def test_build(self, dependency_list, mocker):
         """Build dependencies in list."""
@@ -94,3 +120,32 @@ class TestDependencyList:
         mocked_mkdir_p.assert_called_with(CACHE_INSTALL)
         mocked_check_cmake_exists.assert_called_with()
         mocked_install.assert_called_with()
+
+    def test_check(self, dependency_list_data):
+        """Check dependencies in list."""
+        output = StringIO()
+        dependency_list_data.check(output)
+
+    def test_check_diamond_dependencies_same_version(self, dependency_list_data):
+        """Do not detect diamond dependency with same version during check."""
+        dependency_list_data.dependencies[1].cmake_project_name = "Dep1"
+        dependency_list_data.dependencies[1].cmake_project_version = version.parse("1.2.0")
+
+        output = StringIO()
+        dependency_list_data.check(output)
+
+    def test_check_diamond_dependencies_same_url(self, dependency_list_data):
+        """Do not detect diamond dependency with same url during check."""
+        dependency_list_data.dependencies[1].cmake_project_name = "Dep1"
+        dependency_list_data.dependencies[1].url = "http://example.com/dep1"
+
+        output = StringIO()
+        dependency_list_data.check(output)
+
+    def test_check_diamond_dependencies_error(self, dependency_list_data):
+        """Detect diamond dependency during check."""
+        dependency_list_data.dependencies[1].cmake_project_name = "Dep1"
+
+        with pytest.raises(DiamondDependencyError):
+            output = StringIO()
+            dependency_list_data.check(output)

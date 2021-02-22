@@ -1,6 +1,7 @@
 import pytest
 from io import StringIO
 from re import escape
+from packaging import version
 from shutil import ReadError
 from unittest.mock import call, MagicMock
 from urllib.error import HTTPError
@@ -15,6 +16,7 @@ from dependencmake.dependency import (
     ArchiveDownloadError,
     ArchiveMoveError,
     BuildError,
+    CMakeProjectDataNotFoundError,
     ConfigureError,
     Dependency,
     FolderAccessError,
@@ -728,3 +730,43 @@ class TestDependency:
 
         with pytest.raises(InstallError, match=r"Cannot install My dep: error"):
             dependency.install()
+
+    def test_set_cmake_project_data(self, mocker, dependency):
+        """Set dependency CMake data."""
+        mocked_get_project_data = mocker.patch(
+            "dependencmake.dependency.get_project_data", autoset=True
+        )
+        mocked_get_project_data.return_value = {
+            "name": "MyProjectName",
+            "version": "1.2.0",
+        }
+
+        assert not dependency.cmake_project_name
+        assert dependency.cmake_project_version is None
+        dependency.set_cmake_project_data()
+        assert dependency.cmake_project_name == "MyProjectName"
+        assert dependency.cmake_project_version == version.parse("1.2.0")
+
+    def test_set_cmake_project_data_no_version(self, mocker, dependency):
+        """Set dependency CMake data without version."""
+        mocked_get_project_data = mocker.patch(
+            "dependencmake.dependency.get_project_data", autoset=True
+        )
+        mocked_get_project_data.return_value = {
+            "name": "MyProjectName",
+            "version": None,
+        }
+
+        assert dependency.cmake_project_version is None
+        dependency.set_cmake_project_data()
+        assert dependency.cmake_project_version is None
+
+    def test_set_cmake_project_data_not_found(self, mocker, dependency):
+        """Unable to set dependency CMake data."""
+        mocked_get_project_data = mocker.patch(
+            "dependencmake.dependency.get_project_data", autoset=True
+        )
+        mocked_get_project_data.return_value = None
+
+        with pytest.raises(CMakeProjectDataNotFoundError):
+            dependency.set_cmake_project_data()

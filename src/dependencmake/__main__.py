@@ -151,6 +151,7 @@ def run_fetch(args: Namespace, output=sys.stdout):
     dependency_list.create_dependencies(args.path)
     dependency_list.create_subdependencies()
     dependency_list.fetch(output)
+    dependency_list.check(output)
 
     output.write("Done\n")
 
@@ -164,6 +165,7 @@ def run_build(args: Namespace, output=sys.stdout):
     dependency_list.create_dependencies(args.path)
     dependency_list.create_subdependencies()
     dependency_list.fetch(output)
+    dependency_list.check(output)
     dependency_list.build(args.rest, output)
 
     output.write("Done\n")
@@ -178,6 +180,7 @@ def run_install(args: Namespace, output=sys.stdout):
     dependency_list.create_dependencies(args.path)
     dependency_list.create_subdependencies()
     dependency_list.fetch(output)
+    dependency_list.check(output)
     dependency_list.build(args.rest, output)
     dependency_list.install(output)
 

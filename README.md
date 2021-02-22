@@ -63,6 +63,8 @@ cmake .. -DCMAKE_PREFIX_PATH=$PWD/dependencmake/install -DCMAKE_BUILD_TYPE=Relea
 make
 ```
 
+the `-DCMAKE_INSTALL_PREFIX` argument is required to tell CMake where dependencies are installed.
+
 ## Configuration file
 
 The configuration file uses the [YAML format](https://en.wikipedia.org/wiki/YAML).
@@ -109,3 +111,8 @@ It's pretty clear what the purpose of each subfolder of the cache is.
 The dependency directory name is the lower case and slugified name of the dependency, appended with a MD5 hash of the URL.
 This allows to make the directory unique per couple name/URL and humanly readable.
 `install` has no logic enforced and is populated according to the `install` directives of the `CMakeLists.txt` files of the dependencies.
+
+## Additionnal checks
+
+After fetching dependencies, they are checked to detect patterns not managed by the program.
+For now, diamond dependencies (where the same dependency is requested by two others) are invalid if they are not strictly equivalent.

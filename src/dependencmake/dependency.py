@@ -1,7 +1,9 @@
 import hashlib
 import sys
 from dataclasses import dataclass
+from io import StringIO
 from multiprocessing import cpu_count
+from packaging import version
 from shutil import get_unpack_formats, ReadError, unpack_archive
 from tempfile import TemporaryDirectory
 from typing import Optional
@@ -20,6 +22,7 @@ from dependencmake.cmake import (
     CMakeBuildError,
     CMakeConfigureError,
     CMakeInstallError,
+    get_project_data,
 )
 from dependencmake.exceptions import DependenCmakeError
 from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
@@ -45,6 +48,8 @@ class Dependency:
     fetched: bool = False
     built: bool = False
     installed: bool = False
+    cmake_project_name: str = ""
+    cmake_project_version: Optional[version.Version] = None
 
     def __post_init__(self):
         # parse URL
@@ -104,6 +109,12 @@ class Dependency:
 
         if self.built:
             output.write("Built\n")
+
+    def get_description(self) -> str:
+        """Give dependency description."""
+        description = StringIO()
+        self.describe(description)
+        return description.getvalue()
 
     def fetch(self):
         """Fetch the dependency according to its type.
@@ -278,13 +289,32 @@ class Dependency:
                 f"Cannot move archive of {self.name}: {error}"
             ) from error
 
-    def build(self, extra_args: list = []):
-        """Build the dependency."""
-        # set source directory
+    def get_source_directory(self) -> Path:
+        """Get source directory of the dependency."""
         source_directory = CACHE_FETCH / self.directory_name
 
         if self.cmake_subdir:
             source_directory /= self.cmake_subdir
+
+        return source_directory
+
+    def set_cmake_project_data(self):
+        """Set CMake project data from dependency CMakeLists.txt."""
+        data = get_project_data(self.get_source_directory())
+
+        # project data must be found
+        if data is None:
+            raise CMakeProjectDataNotFoundError(
+                f"Unable to get project data from {self.name}"
+            )
+
+        self.cmake_project_name = data["name"]
+        if data["version"]:
+            self.cmake_project_version = version.parse(data["version"])
+
+    def build(self, extra_args: list = []):
+        """Build the dependency."""
+        source_directory = self.get_source_directory()
 
         # check there is a CMakeLists.txt file in it
         check_cmake_lists_file_exists(source_directory)
@@ -366,4 +396,8 @@ class BuildError(DependenCmakeError):
 
 
 class InstallError(DependenCmakeError):
+    pass
+
+
+class CMakeProjectDataNotFoundError(DependenCmakeError):
     pass

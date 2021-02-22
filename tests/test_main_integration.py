@@ -38,6 +38,13 @@ class TestRunFetch:
         mocker.patch("dependencmake.dependency.Repo")
         mocker.patch("dependencmake.dependency.urlretrieve")
         mocker.patch("dependencmake.dependency.unpack_archive")
+        mocked_get_project_data = mocker.patch(
+            "dependencmake.dependency.get_project_data"
+        )
+        mocked_get_project_data.side_effect = [
+            {"name": "Dep1", "version": "1.0.0"},
+            {"name": "Dep2", "version": "2.0.0"},
+        ]
 
         with TemporaryDirectory() as temp_directory:
             with cd(Path(temp_directory)):
@@ -58,6 +65,13 @@ class TestRunBuild:
         mocker.patch(
             "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
+        mocked_get_project_data = mocker.patch(
+            "dependencmake.dependency.get_project_data"
+        )
+        mocked_get_project_data.side_effect = [
+            {"name": "Dep1", "version": "1.0.0"},
+            {"name": "Dep2", "version": "2.0.0"},
+        ]
 
         with TemporaryDirectory() as temp_directory:
             with cd(Path(temp_directory)):
@@ -78,6 +92,13 @@ class TestRunInstall:
         mocker.patch(
             "dependencmake.dependency.check_cmake_lists_file_exists", autospec=True
         )
+        mocked_get_project_data = mocker.patch(
+            "dependencmake.dependency.get_project_data"
+        )
+        mocked_get_project_data.side_effect = [
+            {"name": "Dep1", "version": "1.0.0"},
+            {"name": "Dep2", "version": "2.0.0"},
+        ]
 
         with TemporaryDirectory() as temp_directory:
             with cd(Path(temp_directory)):

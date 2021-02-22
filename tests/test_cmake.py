@@ -16,6 +16,7 @@ from dependencmake.cmake import (
     CMakeNotFoundError,
     CMakeNotUseableError,
     get_output,
+    get_project_data,
 )
 
 
@@ -210,3 +211,183 @@ class TestGetOutput:
     def test_get_verbose(self):
         """Test to get verbose output."""
         assert get_output(False) is None
+
+
+class TestGetProjectDate:
+    def test_get_none(self, mocker):
+        """Unable to get project data."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = ""
+
+        data = get_project_data(Path("path"))
+        assert data is None
+
+        mocked_read_text.assert_called_with(Path("path") / "CMakeLists.txt")
+
+    def test_get_single_line_name(self, mocker):
+        """Get project name as single line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(MyProject)"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] is None
+
+    def test_get_single_line_name_space(self, mocker):
+        """Get project name as single line with extra spaces."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project ( MyProject )"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] is None
+
+    def test_get_single_line_name_version(self, mocker):
+        """Get project name and version as single line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(MyProject VERSION 0.0)"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] == "0.0"
+
+    def test_get_single_line_name_other_version(self, mocker):
+        """Get project name and version as single line with other data inbetween."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = (
+            """project(MyProject DESCRIPTION "Project description text" VERSION 0.0)"""
+        )
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] == "0.0"
+
+    def test_get_single_line_name_other_version_other(self, mocker):
+        """Get project name and version as single line with other data after."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = (
+            """project(MyProject DESCRIPTION "Project description text" """
+            """VERSION 0.0 LANGUAGES Fortran)"""
+        )
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] == "0.0"
+
+    def test_get_multi_line_name(self, mocker):
+        """Get project name as multi line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(
+    MyProject
+)"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] is None
+
+    def test_get_multi_line_name_version(self, mocker):
+        """Get project name and version as multi line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(
+    MyProject
+    VERSION
+        0.0
+)"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] == "0.0"
+
+    def test_get_multi_line_name_version_other(self, mocker):
+        """Get project name and version as multi line with other data inbetween."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(
+    MyProject
+    DESCRIPTION
+        "Project name text"
+    VERSION
+        0.0
+)"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] == "0.0"
+
+    def test_get_multi_line_name_version_other_after(self, mocker):
+        """Get project name and version as multi line with other data after."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(
+    MyProject
+    DESCRIPTION
+        "Project name text"
+    VERSION
+        0.0
+    LANGUAGES
+        Fortran
+)"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] == "0.0"
+
+    def test_get_mixed_line_name_version_other_after(self, mocker):
+        """Get project name and version as mixed line with other data after."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(MyProject
+    DESCRIPTION
+        "Project name text"
+    VERSION
+        0.0
+    LANGUAGES
+        Fortran
+)"""
+
+        data = get_project_data(Path("path"))
+        assert data["name"] == "MyProject"
+        assert data["version"] == "0.0"
+
+    def test_get_project_version_single_line_version(self, mocker):
+        """Get project version from PROJECT_VERISION as single line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(MyProject)
+
+set(PROJECT_VERSION 0.0)"""
+
+        data = get_project_data(Path("path"))
+        assert data["version"] == "0.0"
+
+    def test_get_cmake_project_version_single_line_version(self, mocker):
+        """Get project version from CMAKE_PROJECT_VERSION as single line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(MyProject)
+
+set(CMAKE_PROJECT_VERSION 0.0)"""
+
+        data = get_project_data(Path("path"))
+        assert data["version"] == "0.0"
+
+    def test_get_project_version_multi_line_version(self, mocker):
+        """Get project version from PROJECT_VERISION as multi line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(MyProject)
+
+set(
+    PROJECT_VERSION
+    0.0
+)"""
+
+        data = get_project_data(Path("path"))
+        assert data["version"] == "0.0"
+
+    def test_get_cmake_project_version_multi_line_version(self, mocker):
+        """Get project version from CMAKE_PROJECT_VERSION as multi line."""
+        mocked_read_text = mocker.patch.object(Path, "read_text", autospec=True)
+        mocked_read_text.return_value = """project(MyProject)
+
+set(
+    CMAKE_PROJECT_VERSION
+    0.0
+)"""
+
+        data = get_project_data(Path("path"))
+        assert data["version"] == "0.0"

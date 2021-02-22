@@ -1,3 +1,4 @@
+import re
 from subprocess import CalledProcessError, DEVNULL, PIPE, run
 from typing import Optional
 
@@ -16,6 +17,34 @@ CMAKE_PARALLEL = "--parallel"
 CMAKE_PREFIX_PATH = "-DCMAKE_PREFIX_PATH={}"
 CMAKE_SOURCE_PATH = "-S"
 CMAKE_VERSION = "--version"
+CMAKE_PROJECT_REGEX = re.compile(
+    r"""project
+    [\W\r\n]*
+    \(
+    [\W\r\n]*
+    (?P<name>\w*)
+    (?:
+        .*?
+        \bversion\b
+        [\W\r\n]*
+        (?P<version>[\.\d]*)
+    )?
+    .*?
+\)""",
+    re.IGNORECASE | re.DOTALL | re.VERBOSE,
+)
+CMAKE_SET_VERSION_REGEX = re.compile(
+    r"""set
+    [\W\r\n]*
+    \(
+    [\W\r\n]*
+    \b(:?project_version|cmake_project_version)\b
+    [\W\r\n]*
+    (?P<version>[\.\d]*)
+    .*?
+\)""",
+    re.IGNORECASE | re.DOTALL | re.VERBOSE,
+)
 
 
 def check_cmake_exists():
@@ -117,6 +146,28 @@ def get_output(quiet: bool) -> Optional[int]:
         return PIPE
 
     return None
+
+
+def get_project_data(path: Path) -> Optional[dict]:
+    """Get project data from CMakeLists.txt."""
+    content = (path / CMAKE_LISTS_FILE).read_text()
+
+    # find project name and version in `project` command
+    project_match = CMAKE_PROJECT_REGEX.search(content)
+
+    if not project_match:
+        return None
+
+    version = project_match["version"]
+
+    if version is None:
+        # if version not found, try to find it in `set` command
+        version_match = CMAKE_SET_VERSION_REGEX.search(content)
+
+        if version_match:
+            version = version_match["version"]
+
+    return {"name": project_match["name"], "version": version}
 
 
 class CMakeNotFoundError(DependenCmakeError):

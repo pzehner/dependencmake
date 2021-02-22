@@ -37,6 +37,10 @@ class TestDependencyList:
         """Fetch supdependencies."""
         mocker.patch("dependencmake.dependency.urlretrieve")
         mocker.patch("dependencmake.dependency.unpack_archive")
+        mocked_get_project_data = mocker.patch(
+            "dependencmake.dependency.get_project_data"
+        )
+        mocked_get_project_data.return_value = {"name": "Dep", "version": "1.0.0"}
 
         with TemporaryDirectory() as temp_directory:
             temp_path = Path(temp_directory)
