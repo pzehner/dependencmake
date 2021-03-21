@@ -1,7 +1,12 @@
 from argparse import Namespace
-from importlib import resources
 from io import StringIO
 from tempfile import TemporaryDirectory
+
+try:
+    from importlib.resources import path
+
+except ImportError:
+    from importlib_resources import path  # type: ignore
 
 from path import Path
 
@@ -12,7 +17,7 @@ from dependencmake.filesystem import CACHE_INSTALL
 class TestRunList:
     def test_run(self):
         """List dependencies."""
-        with resources.path("tests.resources", "dependencmake.yaml") as config:
+        with path("tests.resources", "dependencmake.yaml") as config:
             directory_path = Path(config).parent
             args = Namespace(path=directory_path)
             output = StringIO()
@@ -35,7 +40,7 @@ class TestRunFetch:
 
         with TemporaryDirectory() as temp_directory:
             with Path(temp_directory):
-                with resources.path("tests.resources", "dependencmake.yaml") as config:
+                with path("tests.resources", "dependencmake.yaml") as config:
                     directory_path = Path(config).parent
                     args = Namespace(path=directory_path, force=False)
                     output = StringIO()
@@ -62,7 +67,7 @@ class TestRunBuild:
 
         with TemporaryDirectory() as temp_directory:
             with Path(temp_directory):
-                with resources.path("tests.resources", "dependencmake.yaml") as config:
+                with path("tests.resources", "dependencmake.yaml") as config:
                     directory_path = Path(config).parent
                     args = Namespace(path=directory_path, force=False, rest=[])
                     output = StringIO()
@@ -92,7 +97,7 @@ class TestRunInstall:
                 mocked_get_getcwd = mocker.patch.object(Path, "getcwd")
                 mocked_get_getcwd.return_value = Path("directory")
 
-                with resources.path("tests.resources", "dependencmake.yaml") as config:
+                with path("tests.resources", "dependencmake.yaml") as config:
                     directory_path = Path(config).parent
                     args = Namespace(path=directory_path, force=False, rest=[])
                     output = StringIO()
