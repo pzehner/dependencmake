@@ -53,7 +53,10 @@ The program accepts several actions:
 
 The `build` and `install` actions will take any other arguments and pass them directly to CMake at configure step.
 
-Example:
+If you call `fetch`, `build` or `install` a second time, already fetched dependencies will most likely not be fetched again.
+Git dependencies will be pulled (unless `git_no_update` is set) and other kind of dependencies will rest untouched.
+
+Example of workflow:
 
 ```sh
 mkdir build
@@ -76,8 +79,8 @@ Each item contains the following possible keys:
   Mandatory;
 - `url`:
   URL where to get the dependency.
-  Can be a Git repository, online only (must end by .git),
-  an archive, online or local (must end by .zip, .tar, .tar.bz2, .tbz2, .tar.gz, .tgz, .tar.xz or .txz),
+  Can be a Git repository, online only (must end by `.git`),
+  an archive, online or local (must end by `.zip`, `.tar`, `.tar.bz2`, `.tbz2`, `.tar.gz`, `.tgz`, `.tar.xz` or `.txz`),
   or a plain directory, local only.
   Mandatory;
 - `git_hash`:
