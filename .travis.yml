@@ -27,7 +27,7 @@ script:
   - python -m pytest
 
   # run static analysis
-  - python -m mypy .
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.6 ]]; then python -m mypy .; fi
 
   # run code formatting tests
   - python -m black . --check
