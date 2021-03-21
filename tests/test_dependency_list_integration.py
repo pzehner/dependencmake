@@ -4,7 +4,7 @@ try:
     from importlib.resources import path
 
 except ImportError:
-    from importlib_resources import path
+    from importlib_resources import path  # type: ignore
 
 from path import Path
 
