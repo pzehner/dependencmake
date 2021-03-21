@@ -9,7 +9,6 @@ except ImportError:
 from path import Path
 
 from dependencmake.dependency_list import DependencyList
-from tests.test_main_integration import cd
 
 
 class TestDependencyList:
@@ -18,10 +17,12 @@ class TestDependencyList:
         with TemporaryDirectory() as temp_directory:
             temp_path = Path(temp_directory)
             test_path = temp_path / "test"
-            with path("tests.resources.subdependencies", "") as resources_directory:
-                resources_path = Path(resources_directory)
-                resources_path.copytree(test_path)
-                with cd(resources_path):
+            with path(
+                "tests.resources.subdependencies", "dependencmake.yaml"
+            ) as config:
+                directory_path = Path(config).parent
+                directory_path.copytree(test_path)
+                with test_path:
                     dependency_list = DependencyList()
                     dependency_list.create_dependencies(test_path)
                     dependency_list.create_subdependencies()
@@ -45,10 +46,12 @@ class TestDependencyList:
         with TemporaryDirectory() as temp_directory:
             temp_path = Path(temp_directory)
             test_path = temp_path / "test"
-            with path("tests.resources.subdependencies", "") as resources_directory:
-                resources_path = Path(resources_directory)
-                resources_path.copytree(test_path)
-                with cd(resources_path):
+            with path(
+                "tests.resources.subdependencies", "dependencmake.yaml"
+            ) as config:
+                directory_path = Path(config).parent
+                directory_path.copytree(test_path)
+                with test_path:
                     dependency_list = DependencyList()
                     dependency_list.create_dependencies(test_path)
                     dependency_list.create_subdependencies()

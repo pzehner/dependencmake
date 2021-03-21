@@ -1,5 +1,4 @@
 from argparse import Namespace
-from contextlib import contextmanager
 from importlib import resources
 from io import StringIO
 from tempfile import TemporaryDirectory
@@ -10,23 +9,11 @@ from dependencmake.__main__ import run_build, run_fetch, run_install, run_list
 from dependencmake.filesystem import CACHE_INSTALL
 
 
-@contextmanager
-def cd(path: Path):
-    """Temporarily cd to a directory."""
-    previous = Path.getcwd()
-    try:
-        path.cd()
-        yield None
-
-    finally:
-        previous.cd()
-
-
 class TestRunList:
     def test_run(self):
         """List dependencies."""
-        with resources.path("tests.resources", "") as directory:
-            directory_path = Path(directory)
+        with resources.path("tests.resources", "dependencmake.yaml") as config:
+            directory_path = Path(config).parent
             args = Namespace(path=directory_path)
             output = StringIO()
             run_list(args, output)
@@ -47,9 +34,9 @@ class TestRunFetch:
         ]
 
         with TemporaryDirectory() as temp_directory:
-            with cd(Path(temp_directory)):
-                with resources.path("tests.resources", "") as directory:
-                    directory_path = Path(directory)
+            with Path(temp_directory):
+                with resources.path("tests.resources", "dependencmake.yaml") as config:
+                    directory_path = Path(config).parent
                     args = Namespace(path=directory_path, force=False)
                     output = StringIO()
                     run_fetch(args, output)
@@ -74,9 +61,9 @@ class TestRunBuild:
         ]
 
         with TemporaryDirectory() as temp_directory:
-            with cd(Path(temp_directory)):
-                with resources.path("tests.resources", "") as directory:
-                    directory_path = Path(directory)
+            with Path(temp_directory):
+                with resources.path("tests.resources", "dependencmake.yaml") as config:
+                    directory_path = Path(config).parent
                     args = Namespace(path=directory_path, force=False, rest=[])
                     output = StringIO()
                     run_build(args, output)
@@ -101,12 +88,12 @@ class TestRunInstall:
         ]
 
         with TemporaryDirectory() as temp_directory:
-            with cd(Path(temp_directory)):
+            with Path(temp_directory):
                 mocked_get_getcwd = mocker.patch.object(Path, "getcwd")
                 mocked_get_getcwd.return_value = Path("directory")
 
-                with resources.path("tests.resources", "") as directory:
-                    directory_path = Path(directory)
+                with resources.path("tests.resources", "dependencmake.yaml") as config:
+                    directory_path = Path(config).parent
                     args = Namespace(path=directory_path, force=False, rest=[])
                     output = StringIO()
                     run_install(args, output)
