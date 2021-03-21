@@ -129,7 +129,9 @@ class TestDependencyList:
     def test_check_diamond_dependencies_same_version(self, dependency_list_data):
         """Do not detect diamond dependency with same version during check."""
         dependency_list_data.dependencies[1].cmake_project_name = "Dep1"
-        dependency_list_data.dependencies[1].cmake_project_version = version.parse("1.2.0")
+        dependency_list_data.dependencies[1].cmake_project_version = version.parse(
+            "1.2.0"
+        )
 
         output = StringIO()
         dependency_list_data.check(output)

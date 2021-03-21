@@ -131,7 +131,6 @@ class DependencyList:
                         "Diamond dependency detected with two different versions:\n\n"
                         f"{dependency.get_description()}\n\nand:\n\n"
                         f"{other_dependency.get_description()}"
-
                     )
 
     def build(self, extra_args: list = [], output=sys.stdout):
