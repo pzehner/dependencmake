@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/pzehner/dependencmake.svg?branch=master)](https://travis-ci.com/pzehner/dependencmake)
+
 # DependenCmake
 
 Yet another dependency manager for projects using [CMake](https://cmake.org).
