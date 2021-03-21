@@ -271,6 +271,19 @@ class TestDependency:
         mocked_repo.return_value.remote.assert_called_with()
         mocked_repo.return_value.commit.assert_called_with("424242")
 
+    def test_fetch_git_pull_no_update(self, git_dependency, mocker):
+        """Fetch a Git repository has updates disabled."""
+        mocked_exists = mocker.patch.object(Path, "exists", autospec=True)
+        mocked_exists.return_value = True
+        mocker.patch.object(Path, "mkdir_p", autospec=True)
+        mocked_repo = mocker.patch("dependencmake.dependency.Repo")
+        git_dependency.git_no_update = True
+
+        git_dependency.fetch_git()
+
+        mocked_repo.clone_from.assert_not_called()
+        mocked_repo.return_value.remote.assert_not_called()
+
     def test_fetch_archive_exists(self, mocker, zip_dependency):
         """Fetch an archive already fetched."""
         mocked_exists = mocker.patch.object(Path, "exists", autospec=True)

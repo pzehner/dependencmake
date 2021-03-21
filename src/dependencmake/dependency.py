@@ -39,6 +39,7 @@ class Dependency:
     name: str
     url: str
     git_hash: str = ""
+    git_no_update: bool = False
     cmake_subdir: Optional[Path] = None
     cmake_args: str = ""
     jobs: int = 0
@@ -168,7 +169,11 @@ class Dependency:
                 path.mkdir_p()
                 repo = Repo.clone_from(self.url, path)
 
+            elif self.git_no_update:
+                return
+
             else:
+
                 repo = Repo(path)
                 repo.head.reference = repo.heads[0]
                 repo.remote().pull()

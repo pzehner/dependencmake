@@ -84,6 +84,9 @@ Each item contains the following possible keys:
   Git hash to checkout to in case of Git repository.
   The hash can be a commit hash or a tag.
   Optional;
+- `git_no_update`:
+  When set to `true`, if the Git repository has been cloned, it will not been pulled on another run.
+  Optional;
 - `cmake_subdir`:
   Subdirectory where to find the CMakeLists.txt file if it is not in the top directory.
   Optional;
