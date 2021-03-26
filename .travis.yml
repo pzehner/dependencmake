@@ -19,7 +19,7 @@ install:
   - python -m pip install --upgrade "setuptools>=46.4.0"
 
   # install dependencies for test
-  - python -m pip install -e ".[tests]"
+  - python -m pip install -e ".[dev]"
 
 # commands to run tests
 script:
