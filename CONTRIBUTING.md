@@ -56,3 +56,20 @@ Install them with:
 ```sh
 pre-commit install
 ```
+
+## Changelog
+
+The project uses [`changelog-cli`](https://github.com/mc706/changelog-cli).
+Each time a PR adds, changes, removes features or fixes a bug, the changelog should be updated with this tool:
+
+```sh
+changelog (new|change|breaks|fix) "<message>"
+```
+
+## Release process
+
+1. Update changelog:
+   ```sh
+   changelog release
+   ```
+   It should suggest a major/minor/patch release depending on the content of the changelog.
