@@ -66,6 +66,11 @@ Each time a PR adds, changes, removes features or fixes a bug, the changelog sho
 changelog (new|change|breaks|fix) "<message>"
 ```
 
+## Version
+
+Version is stored in `src/dependencmake/version.py:__version__` and respects [semantic versionning](https://semver.org).
+It is bumped with [`bump2version`](https://github.com/c4urself/bump2version).
+
 ## Release process
 
 1. Update changelog:
@@ -73,3 +78,9 @@ changelog (new|change|breaks|fix) "<message>"
    changelog release
    ```
    It should suggest a major/minor/patch release depending on the content of the changelog.
+2. Check and commit changelog.
+3. Bump version to obtain **the same version** as in changelog:
+   ```sh
+   bumpversion (major|minor|patch)
+   ```
+   It commits and creates the Git tag automatically.
