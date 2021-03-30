@@ -73,14 +73,51 @@ It is bumped with [`bump2version`](https://github.com/c4urself/bump2version).
 
 ## Release process
 
-1. Update changelog:
+1. Checkout to the `develop` branch and pull:
+   ```sh
+   git checkout develop
+   git pull
+   ```
+   Check if there are any cosmetic changes to make;
+2. Update changelog:
    ```sh
    changelog release
    ```
-   It should suggest a major/minor/patch release depending on the content of the changelog.
-2. Check and commit changelog.
-3. Bump version to obtain **the same version** as in changelog:
+   It should suggest a major/minor/patch release depending on the content of the changelog;
+3. Check and commit changelog;
+   ```sh
+   git add CHANGELOG.md
+   git commit -n -m "Update CHANGELOG for release"
+   ```
+4. Bump version to obtain **the same version** as in changelog:
    ```sh
    bumpversion (major|minor|patch)
    ```
-   It commits and creates the Git tag automatically.
+   It commits and creates the Git tag automatically;
+5. Push the changes to the server, with the tag:
+   ```sh
+   git push
+   git push origin <tag>
+   ```
+6. Checkout to the `master` branch, pull, merge the tagged commit previously created, then push:
+   ```sh
+   git checkout master
+   git pull
+   git merge <tag>
+   git push
+   ```
+7. Clean the `dist` directory:
+   ```sh
+   rm -rf dist/*
+   ```
+8. Create the distribution files and check them:
+   ```sh
+   python setup.py sdist bdist_wheel
+   twine check dist/*
+   ```
+9. Upload the package:
+   ```sh
+   twine upload dist/*
+   ```
+10. On Github, draft a new release, set the version number with the created tag ("Existing tag" should be read).
+    Set the release title with "Version <tag>" and copy-paste the corresponding section of the changelog file in the release description.
