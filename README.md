@@ -14,6 +14,12 @@ This can be also convenient for Fortran projects where installing libraries is n
 
 ## Install
 
+The package requires a recent enough version of `setuptools`:
+
+```sh
+pip install --upgrade "setuptools>=46.4.0"
+```
+
 Install from downloaded repository with:
 
 ```sh
