@@ -4,11 +4,11 @@ import pytest
 from path import Path
 
 from dependencmake.config import (
-    check_config,
     ConfigNotFoundError,
+    IncorrectConfigError,
+    check_config,
     create_config,
     get_config,
-    IncorrectConfigError,
 )
 
 

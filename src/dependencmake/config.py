@@ -7,10 +7,9 @@ except ImportError:
     from importlib_resources import path  # type: ignore
 
 from path import Path
-from yaml import load, Loader
+from yaml import Loader, load
 
 from dependencmake.exceptions import DependenCmakeError
-
 
 CONFIG_NAME = "dependencmake.yaml"
 

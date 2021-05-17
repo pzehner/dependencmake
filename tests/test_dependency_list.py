@@ -1,8 +1,8 @@
 from io import StringIO
-from packaging import version
 from unittest.mock import call
 
 import pytest
+from packaging import version
 from path import Path
 
 from dependencmake.dependency import Dependency

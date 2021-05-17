@@ -6,7 +6,7 @@ from path import Path
 from tqdm import tqdm
 
 from dependencmake.cmake import check_cmake_exists
-from dependencmake.config import check_config, ConfigNotFoundError, get_config
+from dependencmake.config import ConfigNotFoundError, check_config, get_config
 from dependencmake.dependency import Dependency
 from dependencmake.exceptions import DependenCmakeError
 from dependencmake.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL

@@ -1,15 +1,16 @@
-import pytest
 from io import StringIO
 from re import escape
-from packaging import version
 from shutil import ReadError
-from unittest.mock import call, MagicMock
+from unittest.mock import MagicMock, call
 from urllib.error import HTTPError
 
+import pytest
 from furl import furl
 from git import GitCommandError
+from packaging import version
 from path import Path
 
+from dependencmake.cmake import CMakeBuildError, CMakeConfigureError, CMakeInstallError
 from dependencmake.dependency import (
     ArchiveAccessError,
     ArchiveDecompressError,
@@ -24,11 +25,6 @@ from dependencmake.dependency import (
     GitRepoFetchError,
     InstallError,
     UnknownDependencyTypeError,
-)
-from dependencmake.cmake import (
-    CMakeBuildError,
-    CMakeConfigureError,
-    CMakeInstallError,
 )
 from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
 

@@ -1,20 +1,20 @@
-from subprocess import CalledProcessError, DEVNULL, PIPE
+from subprocess import DEVNULL, PIPE, CalledProcessError
 
 import pytest
 from path import Path
 
 from dependencmake.cmake import (
-    check_cmake_exists,
-    check_cmake_lists_file_exists,
-    cmake_build,
-    cmake_configure,
-    cmake_install,
     CMakeBuildError,
     CMakeConfigureError,
     CMakeInstallError,
     CMakeListsFileNotFound,
     CMakeNotFoundError,
     CMakeNotUseableError,
+    check_cmake_exists,
+    check_cmake_lists_file_exists,
+    cmake_build,
+    cmake_configure,
+    cmake_install,
     get_output,
     get_project_data,
 )

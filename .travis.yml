@@ -32,6 +32,7 @@ script:
   # run code formatting tests
   - python -m black . --check
   - python -m flake8
+  - python -m isort . --check
 
 # commands to manage tests results
 after_script:

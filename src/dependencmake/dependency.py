@@ -3,8 +3,7 @@ import sys
 from dataclasses import dataclass
 from io import StringIO
 from multiprocessing import cpu_count
-from packaging import version
-from shutil import get_unpack_formats, ReadError, unpack_archive
+from shutil import ReadError, get_unpack_formats, unpack_archive
 from tempfile import TemporaryDirectory
 from typing import Optional
 from urllib.error import HTTPError
@@ -12,21 +11,21 @@ from urllib.request import urlretrieve
 
 from furl import furl
 from git import GitCommandError, Repo
+from packaging import version
 from path import Path
 
 from dependencmake.cmake import (
+    CMakeBuildError,
+    CMakeConfigureError,
+    CMakeInstallError,
     check_cmake_lists_file_exists,
     cmake_build,
     cmake_configure,
     cmake_install,
-    CMakeBuildError,
-    CMakeConfigureError,
-    CMakeInstallError,
     get_project_data,
 )
 from dependencmake.exceptions import DependenCmakeError
 from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
-
 
 ARCHIVE_EXTENSIONS = [ext for format in get_unpack_formats() for ext in format[1]]
 CPU_CORES = cpu_count()

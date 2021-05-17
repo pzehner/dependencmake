@@ -1,11 +1,10 @@
 import re
-from subprocess import CalledProcessError, DEVNULL, PIPE, run
+from subprocess import DEVNULL, PIPE, CalledProcessError, run
 from typing import Optional
 
 from path import Path
 
 from dependencmake.exceptions import DependenCmakeError
-
 
 CMAKE = "cmake"
 CMAKE_BUILD = "--build"

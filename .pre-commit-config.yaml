@@ -28,3 +28,8 @@ repos:
         entry: python -m flake8
         language: system
         pass_filenames: false
+      - id: isort-check
+        name: Check imports
+        entry: python -m isort . --check
+        language: system
+        pass_filenames: false

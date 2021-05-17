@@ -1,6 +1,6 @@
 import logging
 import sys
-from argparse import ArgumentParser, Namespace, REMAINDER
+from argparse import REMAINDER, ArgumentParser, Namespace
 
 from path import Path
 
@@ -10,7 +10,6 @@ from dependencmake.dependency_list import DependencyList
 from dependencmake.exceptions import DependenCmakeError
 from dependencmake.filesystem import CACHE_INSTALL, clean
 from dependencmake.version import __version__
-
 
 logger = logging.getLogger(__name__)
 
