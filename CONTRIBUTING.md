@@ -81,12 +81,16 @@ poetry run bumpversion (major|minor|patch)
 2. Update changelog:
    ```sh
    poetry run changelog release
-   ```
-   It should suggest a major/minor/patch release depending on the content of the changelog;
-3. Check and commit changelog;
-   ```sh
    git add CHANGELOG.md
    git commit -n -m "Update CHANGELOG for release"
+   ```
+   It should suggest a major/minor/patch release depending on the content of the changelog.
+   You can also manually specify the desired version with `--patch`, `--minor`, `--major`;
+3. Update license to have correct year for release:
+   ```sh
+   bash ./update_license.sh
+   git add LICENSE
+   git commit -n -m "Update LICENSE for release"
    ```
 4. Bump version to obtain **the same version** as in changelog:
    ```sh
