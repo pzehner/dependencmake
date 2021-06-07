@@ -10,26 +10,26 @@ repos:
     hooks:
       - id: pytest-check
         name: Unit tests
-        entry: python -m pytest
+        entry: poetry run pytest
         language: system
         pass_filenames: false
       - id: mypy-check
         name: Static check
-        entry: python -m mypy .
+        entry: poetry run mypy .
         language: system
         pass_filenames: false
       - id: black-check
         name: Check code formatting
-        entry: python -m black . --check
+        entry: poetry run black . --check
         language: system
         pass_filenames: false
       - id: flake8-check
         name: Check PEP8
-        entry: python -m flake8
+        entry: poetry run pflake8
         language: system
         pass_filenames: false
       - id: isort-check
         name: Check imports
-        entry: python -m isort . --check
+        entry: poetry run isort . --check
         language: system
         pass_filenames: false

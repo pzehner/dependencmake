@@ -13,32 +13,30 @@ branches:
   only:
     - master
 
+before_install:
+  # install poetry
+  - pip install poetry
+
 # commands to install python dependencies
 install:
-  # the features used in setup.cfg require at decent version of setuptools
-  - python -m pip install --upgrade "setuptools>=46.4.0"
-
   # install dependencies for test
-  - python -m pip install -e ".[dev]"
+  - poetry install
 
 # commands to run tests
 script:
   # run tests
-  - python -m coverage run -m pytest
+  - poetry run pytest --cov-report term
 
   # run static analysis
-  - if [[ $TRAVIS_PYTHON_VERSION != 3.6 ]]; then python -m mypy .; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.6 ]]; then poetry run mypy .; fi
 
   # run code formatting tests
-  - python -m black . --check
-  - python -m flake8
-  - python -m isort . --check
+  - poetry run black . --check
+  - poetry run pflake8
+  - poetry run isort . --check
 
 # commands to manage tests results
 after_script:
-  # show coverage stats
-  - python -m coverage report -m
-
   # upload coverage stats to codecov.io
   # codecov token is stored in travis settings
-  - python -m codecov -X gcov
+  - poetry run codecov -X gcov
