@@ -20,7 +20,7 @@ before_install:
 # commands to install python dependencies
 install:
   # install dependencies for test
-  - poetry install
+  - poetry install --no-ansi
 
 # commands to run tests
 script:
@@ -32,7 +32,7 @@ script:
 
   # run code formatting tests
   - poetry run black . --check
-  - poetry run pflake8
+  - poetry run flake8
   - poetry run isort . --check
 
 # commands to manage tests results
