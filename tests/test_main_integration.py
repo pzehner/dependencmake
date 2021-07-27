@@ -1,6 +1,5 @@
 from argparse import Namespace
 from io import StringIO
-from tempfile import TemporaryDirectory
 
 try:
     from importlib.resources import path
@@ -8,24 +7,34 @@ try:
 except ImportError:
     from importlib_resources import path  # type: ignore
 
+import pytest
 from path import Path
 
 from dependencmake.__main__ import run_build, run_fetch, run_install, run_list
 from dependencmake.filesystem import CACHE_INSTALL
 
 
+@pytest.fixture
+def temp_directory(tmp_path):
+    return Path(tmp_path)
+
+
 class TestRunList:
-    def test_run(self):
+    def test_run(self, temp_directory):
         """List dependencies."""
+        # copy test files
         with path("tests.resources", "dependencmake.yaml") as config:
-            directory_path = Path(config).parent
-            args = Namespace(path=directory_path)
+            Path(config).copy(temp_directory)
+
+        # run test
+        with temp_directory:
+            args = Namespace(path=temp_directory)
             output = StringIO()
             run_list(args, output)
 
 
 class TestRunFetch:
-    def test_run(self, mocker):
+    def test_run(self, mocker, temp_directory):
         """Fetch dependencies."""
         mocker.patch("dependencmake.dependency.Repo")
         mocker.patch("dependencmake.dependency.urlretrieve")
@@ -38,17 +47,19 @@ class TestRunFetch:
             {"name": "Dep2", "version": "2.0.0"},
         ]
 
-        with TemporaryDirectory() as temp_directory:
-            with Path(temp_directory):
-                with path("tests.resources", "dependencmake.yaml") as config:
-                    directory_path = Path(config).parent
-                    args = Namespace(path=directory_path, force=False)
-                    output = StringIO()
-                    run_fetch(args, output)
+        # copy test files
+        with path("tests.resources", "dependencmake.yaml") as config:
+            Path(config).copy(temp_directory)
+
+        # run test
+        with temp_directory:
+            args = Namespace(path=temp_directory, force=False)
+            output = StringIO()
+            run_fetch(args, output)
 
 
 class TestRunBuild:
-    def test_run(self, mocker):
+    def test_run(self, mocker, temp_directory):
         """Build dependencies."""
         mocker.patch("dependencmake.dependency.Repo")
         mocker.patch("dependencmake.dependency.urlretrieve")
@@ -65,17 +76,19 @@ class TestRunBuild:
             {"name": "Dep2", "version": "2.0.0"},
         ]
 
-        with TemporaryDirectory() as temp_directory:
-            with Path(temp_directory):
-                with path("tests.resources", "dependencmake.yaml") as config:
-                    directory_path = Path(config).parent
-                    args = Namespace(path=directory_path, force=False, rest=[])
-                    output = StringIO()
-                    run_build(args, output)
+        # copy test files
+        with path("tests.resources", "dependencmake.yaml") as config:
+            Path(config).copy(temp_directory)
+
+        # run test
+        with temp_directory:
+            args = Namespace(path=temp_directory, force=False, rest=[])
+            output = StringIO()
+            run_build(args, output)
 
 
 class TestRunInstall:
-    def test_run(self, mocker):
+    def test_run(self, mocker, temp_directory):
         """Install dependencies."""
         mocker.patch("dependencmake.dependency.Repo")
         mocker.patch("dependencmake.dependency.urlretrieve")
@@ -92,19 +105,18 @@ class TestRunInstall:
             {"name": "Dep2", "version": "2.0.0"},
         ]
 
-        with TemporaryDirectory() as temp_directory:
-            with Path(temp_directory):
-                mocked_get_getcwd = mocker.patch.object(Path, "getcwd")
-                mocked_get_getcwd.return_value = Path("directory")
+        # copy test files
+        with path("tests.resources", "dependencmake.yaml") as config:
+            Path(config).copy(temp_directory)
 
-                with path("tests.resources", "dependencmake.yaml") as config:
-                    directory_path = Path(config).parent
-                    args = Namespace(path=directory_path, force=False, rest=[])
-                    output = StringIO()
-                    run_install(args, output)
+        # run test
+        with temp_directory:
+            args = Namespace(path=temp_directory, force=False, rest=[])
+            output = StringIO()
+            run_install(args, output)
 
         content = output.getvalue()
         assert (
-            f"You can now call CMake with -DCMAKE_PREFIX_PATH=directory/{CACHE_INSTALL}"
-            in content
+            "You can now call CMake with -DCMAKE_PREFIX_PATH="
+            f"{temp_directory / CACHE_INSTALL}" in content
         )
