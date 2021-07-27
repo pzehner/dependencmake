@@ -37,10 +37,10 @@ The source code follows the [PEP8](https://www.python.org/dev/peps/pep-0008/) gu
 poetry run black .
 ```
 
-PEP8 validity can be checked with [`flake8`](https://flake8.pycqa.org/en/latest/), encapsulated by [`pyproject-flake8`](https://github.com/csachs/pyproject-flake8):
+PEP8 validity can be checked with [`flake8`](https://flake8.pycqa.org/en/latest/):
 
 ```sh
-poetry run pflake8
+poetry run flake8
 ```
 
 ## Hooks
