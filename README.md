@@ -14,6 +14,16 @@ This can be also convenient for Fortran projects where installing libraries is n
 
 ## Install
 
+### From PyPI
+
+Simply install the project with `pip`:
+
+```sh
+pip install dependencmake
+```
+
+### From repository
+
 This package is managed with [Poetry](https://python-poetry.org/):
 
 ```sh
