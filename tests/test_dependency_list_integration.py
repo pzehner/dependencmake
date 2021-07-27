@@ -20,8 +20,7 @@ def subdependencies_temp_directory(temp_directory):
     with path("tests.resources.subdependencies", "dependencmake.yaml") as config:
         Path(config).copy(temp_directory)
 
-    fetch_directory = (temp_directory / "dependencmake").mkdir_p()
-    fetch_directory = (temp_directory / "dependencmake" / "fetch").mkdir_p()
+    fetch_directory = (temp_directory / "dependencmake" / "fetch").makedirs_p()
     (fetch_directory / "dep11_1d264692d45516dcae4a8f07a847d742").mkdir_p()
     (fetch_directory / "dep12_fe8ba562a3f2c89af885e5036f465d4b").mkdir_p()
     dep1 = (fetch_directory / "dep1_36e47005e2edb6e84fdb0e2e411bff5a").mkdir_p()

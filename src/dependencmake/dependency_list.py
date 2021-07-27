@@ -159,7 +159,7 @@ class DependencyList:
     def install(self, output=sys.stdout):
         """Install dependencies."""
         # create build cache
-        self.install_path.mkdir_p()
+        self.install_path.makedirs_p()
 
         # check CMake works
         check_cmake_exists()

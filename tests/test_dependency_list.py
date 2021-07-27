@@ -112,7 +112,7 @@ class TestDependencyList:
 
     def test_install(self, dependency_list, mocker):
         """Install dependencies in list."""
-        mocked_mkdir_p = mocker.patch.object(Path, "mkdir_p", autospec=True)
+        mocked_makedirs_p = mocker.patch.object(Path, "makedirs_p", autospec=True)
         mocked_check_cmake_exists = mocker.patch(
             "dependencmake.dependency_list.check_cmake_exists"
         )
@@ -121,7 +121,7 @@ class TestDependencyList:
         output = StringIO()
         dependency_list.install(output)
 
-        mocked_mkdir_p.assert_called_with(CACHE_INSTALL)
+        mocked_makedirs_p.assert_called_with(CACHE_INSTALL)
         mocked_check_cmake_exists.assert_called_with()
         mocked_install.assert_called_with()
 
