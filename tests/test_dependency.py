@@ -26,7 +26,7 @@ from dependencmake.dependency import (
     InstallError,
     UnknownDependencyTypeError,
 )
-from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
+from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH
 
 
 @pytest.fixture
@@ -597,7 +597,7 @@ class TestDependency:
         mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         assert not dependency.built
-        dependency.build()
+        dependency.build(Path("install"))
         assert dependency.build
 
         mocked_cmake_lists_file_exists.assert_called_with(
@@ -606,7 +606,7 @@ class TestDependency:
         mocked_cmake_configure.assert_called_with(
             CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
             CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
-            CACHE_INSTALL,
+            Path("install"),
             ["-DCMAKE_ARG=ON"],
         )
         mocked_cmake_build.assert_called_with(
@@ -626,7 +626,7 @@ class TestDependency:
         )
         mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
-        subdir_dependency.build()
+        subdir_dependency.build(Path("install"))
 
         mocked_cmake_lists_file_exists.assert_called_with(
             CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93" / "subdir"
@@ -634,7 +634,7 @@ class TestDependency:
         mocked_cmake_configure.assert_called_with(
             CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93" / "subdir",
             CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
-            CACHE_INSTALL,
+            Path("install"),
             [],
         )
         mocked_cmake_build.assert_called_with(
@@ -653,13 +653,13 @@ class TestDependency:
         mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         assert not dependency.built
-        dependency.build(["-DCMAKE_ARG1=ON", "-DCMAKE_ARG2=OFF"])
+        dependency.build(Path("install"), ["-DCMAKE_ARG1=ON", "-DCMAKE_ARG2=OFF"])
         assert dependency.build
 
         mocked_cmake_configure.assert_called_with(
             CACHE_FETCH / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
             CACHE_BUILD / "my_dep_6dff8f0c30c3a3e97685b1c89e0baf93",
-            CACHE_INSTALL,
+            Path("install"),
             ["-DCMAKE_ARG=ON", "-DCMAKE_ARG1=ON", "-DCMAKE_ARG2=OFF"],
         )
 
@@ -678,7 +678,7 @@ class TestDependency:
         mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         with pytest.raises(ConfigureError, match=r"Cannot configure My dep: error"):
-            dependency.build()
+            dependency.build(Path("install"))
 
         mocked_cmake_build.assert_not_called()
 
@@ -695,7 +695,7 @@ class TestDependency:
         mocker.patch("dependencmake.dependency.CPU_CORES", 1)
 
         with pytest.raises(BuildError, match=r"Cannot build My dep: error"):
-            dependency.build()
+            dependency.build(Path("install"))
 
     def test_describe_after_build(self, zip_dependency, mocker):
         """Describe a dependency after build."""
@@ -705,7 +705,7 @@ class TestDependency:
         mocker.patch("dependencmake.cmake.run")
 
         output = StringIO()
-        zip_dependency.build()
+        zip_dependency.build(Path("install"))
         zip_dependency.describe(output)
         lines = output.getvalue().splitlines()
         assert lines == [

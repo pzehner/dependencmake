@@ -6,7 +6,12 @@ CACHE_BUILD = CACHE / "build"
 CACHE_INSTALL = CACHE / "install"
 
 
-def clean(fetch: bool = False, build: bool = False, install: bool = False):
+def clean(
+    fetch: bool = False,
+    build: bool = False,
+    install: bool = False,
+    install_path: Path = None,
+):
     """Clean cache directories."""
     if fetch:
         CACHE_FETCH.rmtree(ignore_errors=True)
@@ -15,4 +20,5 @@ def clean(fetch: bool = False, build: bool = False, install: bool = False):
         CACHE_BUILD.rmtree(ignore_errors=True)
 
     if install:
-        CACHE_INSTALL.rmtree(ignore_errors=True)
+        install_path = install_path or CACHE_INSTALL
+        install_path.rmtree(ignore_errors=True)

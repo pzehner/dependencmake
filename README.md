@@ -77,6 +77,17 @@ make
 
 the `-DCMAKE_INSTALL_PREFIX` argument is required to tell CMake where dependencies are installed.
 
+It is possible to set the install prefix to a custom value with the `install-prefix` argument.
+In this case dependencies will be installed in this directory instead of in the DependenCmake cache:
+
+```sh
+mkdir build
+cd build
+dependencmake install --install-prefix lib/extern .. -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_PREFIX_PATH=$PWD/lib/extern -DCMAKE_BUILD_TYPE=Release
+make
+```
+
 ## Configuration file
 
 The configuration file uses the [YAML format](https://en.wikipedia.org/wiki/YAML).

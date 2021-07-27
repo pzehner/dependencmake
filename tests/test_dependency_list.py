@@ -98,13 +98,17 @@ class TestDependencyList:
             "dependencmake.dependency_list.check_cmake_exists"
         )
         mocked_build = mocker.patch.object(Dependency, "build")
+        mocked_get_install_path = mocker.patch.object(
+            DependencyList, "get_install_path"
+        )
+        mocked_get_install_path.return_value = Path("install")
 
         output = StringIO()
         dependency_list.build(["-DCMAKE_ARG=ON"], output)
 
         mocked_mkdir_p.assert_called_with(CACHE_BUILD)
         mocked_check_cmake_exists.assert_called_with()
-        mocked_build.assert_called_with(["-DCMAKE_ARG=ON"])
+        mocked_build.assert_called_with(Path("install"), ["-DCMAKE_ARG=ON"])
 
     def test_install(self, dependency_list, mocker):
         """Install dependencies in list."""
@@ -151,3 +155,21 @@ class TestDependencyList:
         with pytest.raises(DiamondDependencyError):
             output = StringIO()
             dependency_list_data.check(output)
+
+    def test_get_install_directory_default(self, mocker):
+        """Test to get default install directory."""
+        mocked_realpath = mocker.patch.object(Path, "realpath", autospec=True)
+        mocked_realpath.side_effect = lambda p: p
+
+        dependency_list = DependencyList()
+
+        assert dependency_list.get_install_path() == CACHE_INSTALL
+
+    def test_get_install_directory_set(self, mocker):
+        """Test to get specified install directory."""
+        mocked_realpath = mocker.patch.object(Path, "realpath", autospec=True)
+        mocked_realpath.side_effect = lambda p: p
+
+        dependency_list = DependencyList(Path("lib"))
+
+        assert dependency_list.get_install_path() == Path("lib")

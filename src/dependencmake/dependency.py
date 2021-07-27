@@ -25,7 +25,7 @@ from dependencmake.cmake import (
     get_project_data,
 )
 from dependencmake.exceptions import DependenCmakeError
-from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH, CACHE_INSTALL
+from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH
 
 ARCHIVE_EXTENSIONS = [ext for format in get_unpack_formats() for ext in format[1]]
 CPU_CORES = cpu_count()
@@ -316,8 +316,8 @@ class Dependency:
         if data["version"]:
             self.cmake_project_version = version.parse(data["version"])
 
-    def build(self, extra_args: list = []):
-        """Build the dependency."""
+    def build(self, install_path: Path, extra_args: list = []):
+        """Configure and build the dependency."""
         source_directory = self.get_source_directory()
 
         # check there is a CMakeLists.txt file in it
@@ -328,7 +328,7 @@ class Dependency:
             cmake_configure(
                 source_directory,
                 CACHE_BUILD / self.directory_name,
-                CACHE_INSTALL,
+                install_path,
                 [*self.cmake_args.split(), *extra_args],
             )
 

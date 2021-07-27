@@ -44,7 +44,7 @@ class TestRunBuild:
             "dependencmake.__main__.DependencyList"
         )
 
-        args = Namespace(path=Path("path"), force=True, rest=[])
+        args = Namespace(path=Path("path"), force=True, install_path=None, rest=[])
         output = StringIO()
         run_build(args, output)
 
@@ -58,7 +58,9 @@ class TestRunBuild:
             "dependencmake.__main__.DependencyList"
         )
 
-        args = Namespace(path=Path("path"), force=False, rest=["-DCMAKE_ARG=ON"])
+        args = Namespace(
+            path=Path("path"), force=False, install_path=None, rest=["-DCMAKE_ARG=ON"]
+        )
         output = StringIO()
         run_build(args, output)
 
@@ -76,7 +78,7 @@ class TestRunInstall:
             "dependencmake.__main__.DependencyList"
         )
 
-        args = Namespace(path=Path("path"), force=True, rest=[])
+        args = Namespace(path=Path("path"), force=True, install_path=None, rest=[])
         output = StringIO()
         run_install(args, output)
 
@@ -90,7 +92,9 @@ class TestRunInstall:
             "dependencmake.__main__.DependencyList"
         )
 
-        args = Namespace(path=Path("path"), force=False, rest=["-DCMAKE_ARG=ON"])
+        args = Namespace(
+            path=Path("path"), force=False, install_path=None, rest=["-DCMAKE_ARG=ON"]
+        )
         output = StringIO()
         run_install(args, output)
 
@@ -122,48 +126,68 @@ class TestRunClean:
         """Run clean command without arguments."""
         mocked_clean = mocker.patch("dependencmake.__main__.clean", autospec=True)
 
-        args = Namespace(fetch=False, build=False, install=False, all=False)
+        args = Namespace(
+            fetch=False, build=False, install=False, all=False, install_path=None
+        )
         output = StringIO()
         run_clean(args, output)
 
-        mocked_clean.assert_called_with(fetch=False, build=True, install=False)
+        mocked_clean.assert_called_with(
+            fetch=False, build=True, install=False, install_path=None
+        )
 
     def test_run_fetch(self, mocker):
         """Run clean command with fetch argument."""
         mocked_clean = mocker.patch("dependencmake.__main__.clean", autospec=True)
 
-        args = Namespace(fetch=True, build=False, install=False, all=False)
+        args = Namespace(
+            fetch=True, build=False, install=False, all=False, install_path=None
+        )
         output = StringIO()
         run_clean(args, output)
 
-        mocked_clean.assert_called_with(fetch=True, build=False, install=False)
+        mocked_clean.assert_called_with(
+            fetch=True, build=False, install=False, install_path=None
+        )
 
     def test_run_build(self, mocker):
         """Run clean command with build argument."""
         mocked_clean = mocker.patch("dependencmake.__main__.clean", autospec=True)
 
-        args = Namespace(fetch=False, build=True, install=False, all=False)
+        args = Namespace(
+            fetch=False, build=True, install=False, all=False, install_path=None
+        )
         output = StringIO()
         run_clean(args, output)
 
-        mocked_clean.assert_called_with(fetch=False, build=True, install=False)
+        mocked_clean.assert_called_with(
+            fetch=False, build=True, install=False, install_path=None
+        )
 
     def test_run_install(self, mocker):
         """Run clean command with install argument."""
         mocked_clean = mocker.patch("dependencmake.__main__.clean", autospec=True)
 
-        args = Namespace(fetch=False, build=False, install=True, all=False)
+        args = Namespace(
+            fetch=False, build=False, install=True, all=False, install_path=None
+        )
         output = StringIO()
         run_clean(args, output)
 
-        mocked_clean.assert_called_with(fetch=False, build=False, install=True)
+        mocked_clean.assert_called_with(
+            fetch=False, build=False, install=True, install_path=None
+        )
 
     def test_run_all(self, mocker):
         """Run clean command with all argument."""
         mocked_clean = mocker.patch("dependencmake.__main__.clean", autospec=True)
 
-        args = Namespace(fetch=False, build=False, install=False, all=True)
+        args = Namespace(
+            fetch=False, build=False, install=False, all=True, install_path=None
+        )
         output = StringIO()
         run_clean(args, output)
 
-        mocked_clean.assert_called_with(fetch=True, build=True, install=True)
+        mocked_clean.assert_called_with(
+            fetch=True, build=True, install=True, install_path=None
+        )

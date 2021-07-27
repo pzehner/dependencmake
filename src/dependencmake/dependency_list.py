@@ -16,7 +16,11 @@ from dependencmake.filesystem import CACHE, CACHE_BUILD, CACHE_FETCH, CACHE_INST
 class DependencyList:
     """List of the dependencies of the project."""
 
+    install_path: Path = CACHE_INSTALL
     dependencies: list = field(default_factory=list)
+
+    def __post_init__(self):
+        self.install_path = self.install_path or CACHE_INSTALL
 
     def create_dependencies(self, path: Path):
         """Set dependencies from config file in given path."""
@@ -133,8 +137,12 @@ class DependencyList:
                         f"{other_dependency.get_description()}"
                     )
 
+    def get_install_path(self) -> Path:
+        """Get a resolved version of the install path."""
+        return self.install_path.realpath()
+
     def build(self, extra_args: list = [], output=sys.stdout):
-        """Build dependencies."""
+        """Configure and build dependencies."""
         # create build cache
         CACHE_BUILD.mkdir_p()
 
@@ -146,12 +154,12 @@ class DependencyList:
         for dependency in tqdm(
             self.dependencies, file=output, leave=False, unit="dependency"
         ):
-            dependency.build(extra_args)
+            dependency.build(self.get_install_path(), extra_args)
 
     def install(self, output=sys.stdout):
         """Install dependencies."""
         # create build cache
-        CACHE_INSTALL.mkdir_p()
+        self.install_path.mkdir_p()
 
         # check CMake works
         check_cmake_exists()

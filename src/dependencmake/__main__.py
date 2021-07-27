@@ -70,6 +70,12 @@ def get_parser() -> ArgumentParser:
         "-f", "--force", help="clean fetch and build caches beforehand"
     )
     build_parser.add_argument(
+        "--install-path",
+        type=Path,
+        help=f"specify install directory, default to {CACHE_INSTALL}",
+        metavar="install-prefix",
+    )
+    build_parser.add_argument(
         "path",
         type=Path,
         help="explicitly specify a source directory",
@@ -89,6 +95,12 @@ def get_parser() -> ArgumentParser:
     install_parser.set_defaults(function=run_install)
     install_parser.add_argument(
         "-f", "--force", help="clean fetch, build and install caches beforehand"
+    )
+    install_parser.add_argument(
+        "--install-path",
+        type=Path,
+        help=f"specify install directory, default to {CACHE_INSTALL}",
+        metavar="install-prefix",
     )
     install_parser.add_argument(
         "path",
@@ -122,6 +134,12 @@ def get_parser() -> ArgumentParser:
     )
     clean_parser.add_argument(
         "-a", "--all", action="store_true", help="clean all caches"
+    )
+    clean_parser.add_argument(
+        "--install-path",
+        type=Path,
+        help=f"specify install directory, default to {CACHE_INSTALL}",
+        metavar="install-prefix",
     )
 
     return parser
@@ -161,7 +179,7 @@ def run_build(args: Namespace, output=sys.stdout):
     if args.force:
         clean(fetch=True, build=True)
 
-    dependency_list = DependencyList()
+    dependency_list = DependencyList(args.install_path)
     dependency_list.create_dependencies(args.path)
     dependency_list.create_subdependencies()
     dependency_list.fetch(output)
@@ -176,7 +194,7 @@ def run_install(args: Namespace, output=sys.stdout):
     if args.force:
         clean(fetch=True, build=True, install=True)
 
-    dependency_list = DependencyList()
+    dependency_list = DependencyList(args.install_path)
     dependency_list.create_dependencies(args.path)
     dependency_list.create_subdependencies()
     dependency_list.fetch(output)
@@ -186,9 +204,9 @@ def run_install(args: Namespace, output=sys.stdout):
 
     output.write("Done\n\n")
 
-    install_path = Path.getcwd() / CACHE_INSTALL
     output.write(
-        f"You can now call CMake with {CMAKE_PREFIX_PATH.format(install_path)}\n"
+        "You can now call CMake with "
+        f"{CMAKE_PREFIX_PATH.format(dependency_list.get_install_path())}\n"
     )
 
 
@@ -198,6 +216,7 @@ def run_clean(args: Namespace, output=sys.stdout):
         fetch=args.fetch or args.all,
         build=args.build or args.all or not (args.fetch or args.build or args.install),
         install=args.install or args.all,
+        install_path=args.install_path,
     )
 
     output.write("Cache cleaned\n")
