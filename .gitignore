@@ -98,6 +98,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-# poetry
-poetry.lock
