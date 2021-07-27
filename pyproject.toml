@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dependencmake"
-version = "0.0.0"
+version = "0.1.0"
 description = "Dependencies manager for projects using CMake"
 authors = ["Paul Zehner <paul.zehner@alumni.enseeiht.fr>"]
 license = "MIT"
