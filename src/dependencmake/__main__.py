@@ -20,6 +20,7 @@ def get_parser() -> ArgumentParser:
         prog="dependencmake",
         description="Dependencies manager for projects using CMake.",
     )
+    parser.set_defaults(function=lambda _: parser.print_help())
     subparsers = parser.add_subparsers()
 
     # version command
