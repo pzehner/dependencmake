@@ -10,7 +10,7 @@ def clean(
     fetch: bool = False,
     build: bool = False,
     install: bool = False,
-    install_path: Path = None,
+    install_path: Path | None = None,
 ):
     """Clean cache directories."""
     if fetch:
