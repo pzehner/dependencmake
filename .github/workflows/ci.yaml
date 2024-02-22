@@ -76,7 +76,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ./.venv
-          key: venv-${{ hashFiles('poetry.lock') }}-${{ matrix.os }}
+          key: venv-${{ hashFiles('poetry.lock') }}-ubuntu-latest
 
       - name: Install dependencies
         run: poetry install --no-ansi
