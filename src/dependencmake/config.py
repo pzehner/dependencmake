@@ -1,10 +1,5 @@
 from distutils.util import strtobool
-
-try:
-    from importlib.resources import path
-
-except ImportError:
-    from importlib_resources import path  # type: ignore
+from importlib.resources import path
 
 from path import Path
 from yaml import Loader, load
