@@ -1,13 +1,8 @@
-try:
-    from importlib.resources import path
-
-except ImportError:
-    from importlib_resources import path  # type: ignore
-
 import pytest
 from path import Path
 
 from dependencmake.dependency_list import DependencyList
+from tests.path import path
 
 
 @pytest.fixture
@@ -18,7 +13,7 @@ def temp_directory(tmp_path):
 @pytest.fixture
 def subdependencies_temp_directory(temp_directory):
     with path("tests.resources.subdependencies", "dependencmake.yaml") as config:
-        Path(config).copy(temp_directory)
+        config.copy(temp_directory)
 
     fetch_directory = (temp_directory / "dependencmake" / "fetch").makedirs_p()
     (fetch_directory / "dep11_1d264692d45516dcae4a8f07a847d742").mkdir_p()
@@ -33,13 +28,13 @@ def subdependencies_temp_directory(temp_directory):
         f"{resource}.dep1_36e47005e2edb6e84fdb0e2e411bff5a",
         "dependencmake.yaml",
     ) as config:
-        Path(config).copy(dep1)
+        config.copy(dep1)
 
     with path(
         f"{resource}.dep2_4b35bd592421ea9170dfb690d7550744",
         "dependencmake.yaml",
     ) as config:
-        Path(config).copy(dep2)
+        config.copy(dep2)
 
     return temp_directory
 

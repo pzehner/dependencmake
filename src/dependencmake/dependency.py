@@ -68,7 +68,7 @@ class Dependency:
 
     def get_extension(self) -> str:
         """Get extension in the URL."""
-        return Path(self.url_parsed.path.segments[-1]).ext
+        return Path(self.url_parsed.path.segments[-1]).suffix  # type: ignore
 
     def refresh(self):
         """Refresh state of dependency based on cache content."""
@@ -172,14 +172,13 @@ class Dependency:
                 return
 
             else:
-
                 repo = Repo(path)
-                repo.head.reference = repo.heads[0]
+                repo.head.reference = repo.heads[0]  # type: ignore
                 repo.remote().pull()
 
             # checkout if requested
             if self.git_hash:
-                repo.head.reference = repo.commit(self.git_hash)
+                repo.head.reference = repo.commit(self.git_hash)  # type: ignore
 
         except GitCommandError as error:
             raise GitRepoFetchError(
@@ -213,7 +212,7 @@ class Dependency:
     def fetch_folder(self):
         """Fetch a local folder and copy it."""
         path = CACHE_FETCH / self.directory_name
-        folder_path = Path(self.url_parsed.path)
+        folder_path = get_path_from_url(self.url_parsed)
 
         # copy if the path doesn't exist, or do nothing otherwise
         if path.exists():
@@ -236,7 +235,7 @@ class Dependency:
     def fetch_local_archive(self):
         """Decompress a local archive."""
         path = CACHE_FETCH / self.directory_name
-        archive_path = Path(self.url_parsed.path)
+        archive_path = get_path_from_url(self.url_parsed)
 
         # fetch if the path doesn't exist, or do nothing otherwise
         if path.exists():
@@ -277,7 +276,7 @@ class Dependency:
         directory. If it contains multiple files, move the decompress directory
         instead.
         """
-        decompress_files_paths = decompress_path.listdir()
+        decompress_files_paths = decompress_path.files()
         if len(decompress_files_paths) == 1:
             to_move_path = decompress_files_paths[0]
 
@@ -357,6 +356,30 @@ class Dependency:
 
         # mark as installed
         self.installed = True
+
+
+def get_path_from_url(url: furl) -> Path:
+    """Convert furl Path object into Path object.
+
+    Args:
+        url (furl.furl): Input URL.
+
+    Returns:
+        path.Path: Path of the URL.
+
+    Raises:
+        AssertionError: If the path of the URL is not absolute.
+    """
+    # check the url path is absolute
+    assert str(url.path).startswith("/")
+
+    path = Path("/")
+
+    # convert furl Path object into path.Path
+    for segment in url.path.segments:
+        path /= segment
+
+    return path
 
 
 class UnknownDependencyTypeError(DependenCmakeError):
