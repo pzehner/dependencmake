@@ -1,9 +1,9 @@
+from http.client import HTTPMessage
 from io import StringIO
 from re import escape
 from shutil import ReadError
 from unittest.mock import MagicMock, call
 from urllib.error import HTTPError
-from http.client import HTTPMessage
 
 import pytest
 from furl import furl

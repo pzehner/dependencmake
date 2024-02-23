@@ -68,7 +68,7 @@ class Dependency:
 
     def get_extension(self) -> str:
         """Get extension in the URL."""
-        return Path(self.url_parsed.path.segments[-1]).suffix
+        return Path(self.url_parsed.path.segments[-1]).suffix  # type: ignore
 
     def refresh(self):
         """Refresh state of dependency based on cache content."""
