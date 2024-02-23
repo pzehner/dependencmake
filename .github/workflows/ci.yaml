@@ -29,12 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: abatilo/actions-poetry@v2
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: poetry
-
-      - uses: abatilo/actions-poetry@v2
 
       - name: Install dependencies
         run: poetry install --no-ansi
@@ -53,12 +53,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: abatilo/actions-poetry@v2
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: poetry
-
-      - uses: abatilo/actions-poetry@v2
 
       - name: Install dependencies
         run: poetry install --no-ansi
