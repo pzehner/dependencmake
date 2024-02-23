@@ -39,7 +39,7 @@ jobs:
         run: poetry install --no-ansi
 
       - name: Tests
-        run: poetry run pytest -v
+        run: poetry run pytest -v --cov src/dependencmake
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
