@@ -29,21 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: poetry
 
       - uses: abatilo/actions-poetry@v2
-
-      - name: Setup virtual environment
-        run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-
-      - uses: actions/cache@v3
-        with:
-          path: ./.venv
-          key: venv-${{ hashFiles('poetry.lock') }}-${{ matrix.os }}
 
       - name: Install dependencies
         run: poetry install --no-ansi
@@ -62,33 +53,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: poetry
 
       - uses: abatilo/actions-poetry@v2
-
-      - name: Setup virtual environment
-        run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-
-      - uses: actions/cache@v3
-        with:
-          path: ./.venv
-          key: venv-${{ hashFiles('poetry.lock') }}-ubuntu-latest
 
       - name: Install dependencies
         run: poetry install --no-ansi
 
-      - name: Mypycode style
+      - name: Mypy static analysis
         run: poetry run mypy . --check
 
-      - name: Black code style
+      - name: Black code style check
         run: poetry run black . --check
 
-      - name: Flake8 code style
+      - name: Flake8 code style check
         run: poetry run flake8
 
-      - name: Isort code style
+      - name: Isort imports check
         run: poetry run isort . --check
