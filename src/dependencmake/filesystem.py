@@ -1,3 +1,5 @@
+from typing import Optional
+
 from path import Path
 
 CACHE = Path("dependencmake")
@@ -10,7 +12,7 @@ def clean(
     fetch: bool = False,
     build: bool = False,
     install: bool = False,
-    install_path: Path | None = None,
+    install_path: Optional[Path] = None,
 ):
     """Clean cache directories."""
     if fetch:
