@@ -3,6 +3,7 @@ from re import escape
 from shutil import ReadError
 from unittest.mock import MagicMock, call
 from urllib.error import HTTPError
+from http.client import HTTPMessage
 
 import pytest
 from furl import furl
@@ -25,6 +26,7 @@ from dependencmake.dependency import (
     GitRepoFetchError,
     InstallError,
     UnknownDependencyTypeError,
+    get_path_from_url,
 )
 from dependencmake.filesystem import CACHE_BUILD, CACHE_FETCH
 
@@ -43,7 +45,7 @@ def dependency():
 @pytest.fixture
 def subdir_dependency():
     return Dependency(
-        name="My dep", url="http://example.com/dependency", cmake_subdir="subdir"
+        name="My dep", url="http://example.com/dependency", cmake_subdir=Path("subdir")
     )
 
 
@@ -80,6 +82,12 @@ def local_zip_dependency():
     )
 
 
+class TestGetPathFromUrl:
+    def test_get(self):
+        """Convert a furl.Path into a path.Path."""
+        assert get_path_from_url(furl("file:///a/b/c")) == Path("/") / "a" / "b" / "c"
+
+
 class TestDependency:
     def test_create(self):
         """Create a dependency."""
@@ -99,11 +107,6 @@ class TestDependency:
         dependency = Dependency(name="My dep", url="http://example.com/dependency")
         assert dependency.git_hash == ""
         assert dependency.cmake_args == ""
-
-    def test_create_too_few_arguments(self):
-        """Create a dependency with to few arguments."""
-        with pytest.raises(TypeError):
-            Dependency(name="My dep")
 
     def test_describe_dependency(self, dependency):
         """Describe a dependency."""
@@ -331,7 +334,7 @@ class TestDependency:
         mocked_temporary_directory_class.return_value.__enter__.return_value = "temp"
         mocked_urlretrieve = mocker.patch("dependencmake.dependency.urlretrieve")
         mocked_urlretrieve.side_effect = HTTPError(
-            "url", "000", "error", "hdrs", MagicMock()
+            "url", 400, "error", HTTPMessage(), MagicMock()
         )
         mocked_decompress = mocker.patch.object(Dependency, "decompress")
         mocked_move_decompress_path = mocker.patch.object(

@@ -230,6 +230,7 @@ class TestGetProjectDate:
         mocked_read_text.return_value = """project(MyProject)"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] is None
 
@@ -239,6 +240,7 @@ class TestGetProjectDate:
         mocked_read_text.return_value = """project ( MyProject )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] is None
 
@@ -248,6 +250,7 @@ class TestGetProjectDate:
         mocked_read_text.return_value = """project(MyProject VERSION 0.0)"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] == "0.0"
 
@@ -259,6 +262,7 @@ class TestGetProjectDate:
         )
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] == "0.0"
 
@@ -271,6 +275,7 @@ class TestGetProjectDate:
         )
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] == "0.0"
 
@@ -282,6 +287,7 @@ class TestGetProjectDate:
 )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] is None
 
@@ -295,6 +301,7 @@ class TestGetProjectDate:
 )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] == "0.0"
 
@@ -310,6 +317,7 @@ class TestGetProjectDate:
 )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] == "0.0"
 
@@ -327,6 +335,7 @@ class TestGetProjectDate:
 )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] == "0.0"
 
@@ -343,6 +352,7 @@ class TestGetProjectDate:
 )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["name"] == "MyProject"
         assert data["version"] == "0.0"
 
@@ -354,6 +364,7 @@ class TestGetProjectDate:
 set(PROJECT_VERSION 0.0)"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["version"] == "0.0"
 
     def test_get_cmake_project_version_single_line_version(self, mocker):
@@ -364,6 +375,7 @@ set(PROJECT_VERSION 0.0)"""
 set(CMAKE_PROJECT_VERSION 0.0)"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["version"] == "0.0"
 
     def test_get_project_version_multi_line_version(self, mocker):
@@ -377,6 +389,7 @@ set(
 )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["version"] == "0.0"
 
     def test_get_cmake_project_version_multi_line_version(self, mocker):
@@ -390,4 +403,5 @@ set(
 )"""
 
         data = get_project_data(Path("path"))
+        assert data is not None
         assert data["version"] == "0.0"
