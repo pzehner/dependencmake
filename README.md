@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/pzehner/dependencmake.svg?branch=master)](https://travis-ci.com/pzehner/dependencmake)
+[![Continuous integration](https://github.com/pzehner/dependencmake/actions/workflows/ci.yaml/badge.svg)](https://github.com/pzehner/dependencmake/actions/workflows/ci.yaml)
 [![codecov](https://codecov.io/gh/pzehner/dependencmake/branch/master/graph/badge.svg?token=XE5V2XO9XM)](https://codecov.io/gh/pzehner/dependencmake)
 [![PyPI version](https://badge.fury.io/py/dependencmake.svg)](https://pypi.python.org/pypi/dependencmake/)
 [![PyPI Python versions](https://img.shields.io/pypi/pyversions/dependencmake.svg)](https://pypi.python.org/pypi/dependencmake/)
