@@ -380,21 +380,21 @@ class TestDependency:
 
     def test_move_decompress_path_single(self, mocker, dependency):
         """Move a single directory."""
-        mocked_listdir = mocker.patch.object(Path, "listdir", autospec=True)
-        mocked_listdir.return_value = [Path("temp") / "extract" / "my_dep"]
+        mocked_files = mocker.patch.object(Path, "files", autospec=True)
+        mocked_files.return_value = [Path("temp") / "extract" / "my_dep"]
         mocked_move = mocker.patch.object(Path, "move", autospec=True)
 
         dependency.move_decompress_path(Path("temp") / "extract", Path("destination"))
 
-        mocked_listdir.assert_called_with(Path("temp") / "extract")
+        mocked_files.assert_called_with(Path("temp") / "extract")
         mocked_move.assert_called_with(
             Path("temp") / "extract" / "my_dep", Path("destination")
         )
 
     def test_move_decompress_path_single_error(self, mocker, dependency):
         """Error when moving a single directory."""
-        mocked_listdir = mocker.patch.object(Path, "listdir", autospec=True)
-        mocked_listdir.return_value = [Path("temp") / "extract" / "my_dep"]
+        mocked_files = mocker.patch.object(Path, "files", autospec=True)
+        mocked_files.return_value = [Path("temp") / "extract" / "my_dep"]
         mocked_move = mocker.patch.object(Path, "move", autospec=True)
         mocked_move.side_effect = OSError("error")
 
@@ -407,8 +407,8 @@ class TestDependency:
 
     def test_move_decompress_path_multiple(self, mocker, dependency):
         """Move several elements."""
-        mocked_listdir = mocker.patch.object(Path, "listdir", autospec=True)
-        mocked_listdir.return_value = [
+        mocked_files = mocker.patch.object(Path, "files", autospec=True)
+        mocked_files.return_value = [
             Path("temp") / "extract" / "file1",
             Path("temp") / "extract" / "file2",
         ]
@@ -416,7 +416,7 @@ class TestDependency:
 
         dependency.move_decompress_path(Path("temp") / "extract", Path("destination"))
 
-        mocked_listdir.assert_called_with(Path("temp") / "extract")
+        mocked_files.assert_called_with(Path("temp") / "extract")
         mocked_move.assert_called_with(Path("temp") / "extract", Path("destination"))
 
     def test_fetch_folder(self, folder_dependency, mocker):

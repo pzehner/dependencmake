@@ -1,17 +1,12 @@
 from argparse import Namespace
 from io import StringIO
 
-try:
-    from importlib.resources import path
-
-except ImportError:
-    from importlib_resources import path  # type: ignore
-
 import pytest
 from path import Path
 
 from dependencmake.__main__ import run_build, run_fetch, run_install, run_list
 from dependencmake.filesystem import CACHE_INSTALL
+from tests.path import path
 
 
 @pytest.fixture
@@ -24,7 +19,7 @@ class TestRunList:
         """List dependencies."""
         # copy test files
         with path("tests.resources", "dependencmake.yaml") as config:
-            Path(config).copy(temp_directory)
+            config.copy(temp_directory)
 
         # run test
         with temp_directory:
@@ -49,7 +44,7 @@ class TestRunFetch:
 
         # copy test files
         with path("tests.resources", "dependencmake.yaml") as config:
-            Path(config).copy(temp_directory)
+            config.copy(temp_directory)
 
         # run test
         with temp_directory:
@@ -78,7 +73,7 @@ class TestRunBuild:
 
         # copy test files
         with path("tests.resources", "dependencmake.yaml") as config:
-            Path(config).copy(temp_directory)
+            config.copy(temp_directory)
 
         # run test
         with temp_directory:
@@ -107,7 +102,7 @@ class TestRunBuild:
 
         # copy test files
         with path("tests.resources", "dependencmake.yaml") as config:
-            Path(config).copy(temp_directory)
+            config.copy(temp_directory)
 
         # run test
         with temp_directory:
@@ -138,7 +133,7 @@ class TestRunInstall:
 
         # copy test files
         with path("tests.resources", "dependencmake.yaml") as config:
-            Path(config).copy(temp_directory)
+            config.copy(temp_directory)
 
         # run test
         with temp_directory:
@@ -173,7 +168,7 @@ class TestRunInstall:
 
         # copy test files
         with path("tests.resources", "dependencmake.yaml") as config:
-            Path(config).copy(temp_directory)
+            config.copy(temp_directory)
 
         # run test
         with temp_directory:

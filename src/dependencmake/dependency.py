@@ -68,7 +68,7 @@ class Dependency:
 
     def get_extension(self) -> str:
         """Get extension in the URL."""
-        return Path(self.url_parsed.path.segments[-1]).ext
+        return Path(self.url_parsed.path.segments[-1]).suffix
 
     def refresh(self):
         """Refresh state of dependency based on cache content."""
@@ -276,7 +276,7 @@ class Dependency:
         directory. If it contains multiple files, move the decompress directory
         instead.
         """
-        decompress_files_paths = decompress_path.listdir()
+        decompress_files_paths = decompress_path.files()
         if len(decompress_files_paths) == 1:
             to_move_path = decompress_files_paths[0]
 
